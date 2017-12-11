@@ -100,13 +100,13 @@ class Duration implements \JsonSerializable {
 
             Time::fmtInt($buff, $u % 60);
 
-            $u = floor($u /= 60);
+            $u = intdiv($u, 60);
 
             if ($u > 0) {
                 $buff = "m{$buff}";
 
                 Time::fmtInt($buff, $u % 60);
-                $u = floor($u /= 60);
+                $u = intdiv($u, 60);
 
                 if ($u > 0) {
                     $buff = "h{$buff}";

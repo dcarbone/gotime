@@ -156,7 +156,7 @@ class Time {
             if ($print) {
                 $buff = "{$digit}{$buff}";
             }
-            $v = floor($v /= 10);
+            $v = intdiv($v, 10);
         }
         if ($print) {
             $buff = ".{$buff}";
@@ -172,7 +172,7 @@ class Time {
     public static function fmtInt(string &$buff, int $v) {
         while ($v > 0) {
             $buff = sprintf('%d%s', $v % 10, $buff);
-            $v = floor($v /= 10);
+            $v = intdiv($v, 10);
         }
     }
 
