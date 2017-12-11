@@ -98,6 +98,14 @@ class DurationTest extends TestCase {
         $this->assertEquals(Time::Hour, $d->Nanoseconds());
         $this->assertEqualFloats(3600.0, $d->Seconds());
 
+        $d = Time::ParseDuration('1h0m');
+        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertEquals(Time::Hour, $d->Nanoseconds());
+
+        $d = Time::ParseDuration('0m0s');
+        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertEquals(0, $d->Nanoseconds());
+
         $d = Time::ParseDuration('1h2m3s4ms5us6ns');
         $this->assertInstanceOf(Duration::class, $d);
         $this->assertEquals(
