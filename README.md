@@ -30,8 +30,9 @@ There are 2 ways to construct a Duration class:
 use \DCarbone\Go\Time;
 
 $d = new Time\Duration(5 * Time::Second);
+// produces a Duration with an internal value of 5e9;
 
-// TODO: Under construction.
 $d = Time::ParseDuration('5s');
+// produces a Duration with an internal value of 5e9;
 ```
 

@@ -29,27 +29,21 @@ class Duration implements \JsonSerializable {
      * @return float
      */
     public function Seconds(): float {
-        $sec = $this->nanoseconds / Time::Second;
-        $nsec = $this->nanoseconds % Time::Second;
-        return $sec + $nsec / GOTIME_FLOAT_DIVISOR;
+        return $this->nanoseconds / Time::Second;
     }
 
     /**
      * @return float
      */
     public function Minutes(): float {
-        $min = $this->nanoseconds / Time::Minute;
-        $nsec = $this->nanoseconds % Time::Minute;
-        return $min + $nsec / (60 * GOTIME_FLOAT_DIVISOR);
+        return $this->nanoseconds / Time::Minute;
     }
 
     /**
      * @return float
      */
     public function Hours(): float {
-        $hour = $this->nanoseconds / Time::Hour;
-        $nsec = $this->nanoseconds % Time::Hour;
-        return $hour + $nsec / (60 * 60 * GOTIME_FLOAT_DIVISOR);
+        return $this->nanoseconds / Time::Hour;
     }
 
     /**
