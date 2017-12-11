@@ -137,6 +137,16 @@ class DurationTest extends TestCase {
     }
 
     /**
+     * @depends testParseDuration
+     */
+    public function testStringer() {
+        $s = '1h30m';
+        $d = Time::ParseDuration($s);
+        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertEquals('1h30m0s', (string)$d);
+    }
+
+    /**
      * @param float $expected
      * @param float $actual
      * @return void

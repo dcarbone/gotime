@@ -146,9 +146,13 @@ class Duration implements \JsonSerializable {
      * @return void
      */
     private static function fmtInt(string &$buff, int $v) {
-        while ($v > 0) {
-            $buff = sprintf('%d%s', $v % 10, $buff);
-            $v = intdiv($v, 10);
+        if (0 === $v) {
+            $buff = "0{$buff}";
+        } else {
+            while ($v > 0) {
+                $buff = sprintf('%d%s', $v % 10, $buff);
+                $v = intdiv($v, 10);
+            }
         }
     }
 }
