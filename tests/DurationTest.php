@@ -126,7 +126,7 @@ class DurationTest extends TestCase {
      * @depends testParseDuration
      */
     public function testCanGetDateTime() {
-        $n = \time();
+        $n = time();
         $d = Time::ParseDuration(sprintf('%ds', $n));
         $this->assertInstanceOf(Duration::class, $d);
         $this->assertEqualFloats((float)$n, $d->Seconds());

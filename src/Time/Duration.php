@@ -50,7 +50,7 @@ class Duration implements \JsonSerializable {
      * @return \DateTime
      */
     public function DateTime(): \DateTime {
-        return \DateTime::createFromFormat('U', (int)$this->Seconds());
+        return \DateTime::createFromFormat('U', intdiv($this->nanoseconds, Time::Second));
     }
 
     /**
