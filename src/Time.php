@@ -1,7 +1,5 @@
 <?php namespace DCarbone\Go;
 
-use DCarbone\Go\Time\Duration;
-
 /**
  * Class Time
  * @package DCarbone\Go
@@ -14,7 +12,8 @@ class Time {
     const Minute = 60 * self::Second;
     const Hour = 60 * self::Minute;
 
-    const unitMap = [
+    /** @var array */
+    private static $unitMap = [
         'ns' => self::Nanosecond,
         'us' => self::Microsecond,
         'µs' => self::Microsecond,
@@ -29,7 +28,7 @@ class Time {
      * @param string $s
      * @return \DCarbone\Go\Time\Duration
      */
-    public static function ParseDuration(string $s): Duration {
+    public static function ParseDuration(string $s): Time\Duration {
         if (0 === strlen($s)) {
             throw self::invalidDurationException($s);
         }
@@ -44,7 +43,7 @@ class Time {
         }
 
         if ('0' === $s) {
-            return new Duration();
+            return new Time\Duration();
         } else if ('' === $s) {
             throw self::invalidDurationException($orig);
         }
@@ -116,7 +115,7 @@ class Time {
                 }
             }
             $u = substr($s, 0, $i);
-            $unit = self::unitMap[$u] ?? null;
+            $unit = self::$unitMap[$u] ?? null;
             if (null === $unit) {
                 throw self::invalidDurationUnitException($u, $orig);
             }
@@ -138,7 +137,16 @@ class Time {
             $s = substr($s, $i);
         }
 
-        return new Duration($neg ? -$d : $d);
+        return new Time\Duration($neg ? -$d : $d);
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Duration $d1
+     * @param \DCarbone\Go\Time\Duration $d2
+     * @return int
+     */
+    public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int {
+        return $d1->Compare($d2);
     }
 
     /**

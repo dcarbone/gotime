@@ -26,32 +26,36 @@ class DurationTest extends TestCase {
         $d = new Duration($n);
         $this->assertInstanceOf(Duration::class, $d);
         $this->assertEquals($n, $d->Nanoseconds());
+
+        $d = new Duration(-1);
+        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertEquals(-1, $d->Nanoseconds());
     }
 
     /**
      * @depends testCanConstructWithValue
      */
-    public function testSubSecondFormat() {
-        $this->assertEquals('500ms', (string)new Duration(500 * Time::Millisecond));
-        $this->assertEquals('500µs', (string)new Duration(500 * Time::Microsecond));
-        $this->assertEquals('500ns', (string)new Duration(500 * Time::Nanosecond));
+    public function testTruncate() {
+        $d = new Duration(Time::Second);
+        $td = $d->Truncate(new Duration(500 * Time::Millisecond));
+        $this->assertNotSame($d, $td);
+        $this->assertEquals(Time::Second, $td->Nanoseconds());
+        $td = $d->Truncate(new Duration(1001 * Time::Millisecond));
+        $this->assertEquals(0, $td->Nanoseconds());
+        $td = $d->Truncate(new Duration(-1));
+        $this->assertEquals(Time::Second, $td->Nanoseconds());
     }
 
     /**
      * @depends testCanConstructWithValue
      */
-    public function testLargerThanSecondFormat() {
-        $now = time();
-        $d = new Duration($now * Time::Second);
-        preg_match('/^(\d+)h(\d+)m(\d+)s$/', (string)$d, $matches);
-        $this->assertEquals((int)$d->Hours(), (int)$matches[1]);
-        $t = \DateTime::createFromFormat('U', $now, new \DateTimeZone('UTC'));
-        $this->assertEquals((int)$t->format('i'),
-            (int)$matches[2],
-            sprintf('Minute mismatch: %d %d', $matches[2], $t->format('m')));
-        $this->assertEquals((int)$t->format('s'),
-            (int)$matches[3],
-            sprintf('Second mismatch: %d %d', $matches[3], $t->format('s')));
+    public function testRound() {
+        $d = new Duration(Time::Second);
+        $td = $d->Round(new Duration(500 * Time::Millisecond));
+        $this->assertNotSame($d, $td);
+        $this->assertEquals(Time::Second, $td->Nanoseconds());
+        $td = $d->Round(new Duration(5 * Time::Second));
+        $this->assertEquals(0, $td->Nanoseconds());
     }
 
     /**
@@ -148,10 +152,39 @@ class DurationTest extends TestCase {
      * @depends testParseDuration
      */
     public function testStringer() {
+        $this->assertEquals('500ms', (string)new Duration(500 * Time::Millisecond));
+        $this->assertEquals('500µs', (string)new Duration(500 * Time::Microsecond));
+        $this->assertEquals('500ns', (string)new Duration(500 * Time::Nanosecond));
+
+        $now = time();
+        $d = new Duration($now * Time::Second);
+        preg_match('/^(\d+)h(\d+)m(\d+)s$/', (string)$d, $matches);
+        $this->assertEquals((int)$d->Hours(), (int)$matches[1]);
+        $t = \DateTime::createFromFormat('U', $now, new \DateTimeZone('UTC'));
+        $this->assertEquals(
+            (int)$t->format('i'),
+            (int)$matches[2],
+            sprintf('Minute mismatch: %d %d', $matches[2], $t->format('m'))
+        );
+        $this->assertEquals(
+            (int)$t->format('s'),
+            (int)$matches[3],
+            sprintf('Second mismatch: %d %d', $matches[3], $t->format('s'))
+        );
+
         $s = '1h30m';
         $d = Time::ParseDuration($s);
         $this->assertInstanceOf(Duration::class, $d);
         $this->assertEquals('1h30m0s', (string)$d);
+    }
+
+    /**
+     * @depends testParseDuration
+     */
+    public function testCompare() {
+        $d1 = Time::ParseDuration('5s');
+        $this->assertEquals(1, $d1->Compare(Time::ParseDuration('1s')));
+        $this->assertEquals(0, $d1->Compare(Time::ParseDuration('5s')));
     }
 
     /**

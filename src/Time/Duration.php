@@ -8,56 +8,107 @@ use DCarbone\Go\Time;
  */
 class Duration implements \JsonSerializable {
     /** @var int */
-    private $nanoseconds = 0;
+    private $ns = 0;
 
     /**
      * TimeDuration constructor.
      * @param int $nanoseconds
      */
     public function __construct(int $nanoseconds = 0) {
-        $this->nanoseconds = $nanoseconds;
+        $this->ns = $nanoseconds;
     }
 
     /**
      * @return int
      */
     public function Nanoseconds(): int {
-        return $this->nanoseconds;
+        return $this->ns;
     }
 
     /**
      * @return float
      */
     public function Seconds(): float {
-        return $this->nanoseconds / Time::Second;
+        return $this->ns / Time::Second;
     }
 
     /**
      * @return float
      */
     public function Minutes(): float {
-        return $this->nanoseconds / Time::Minute;
+        return $this->ns / Time::Minute;
     }
 
     /**
      * @return float
      */
     public function Hours(): float {
-        return $this->nanoseconds / Time::Hour;
+        return $this->ns / Time::Hour;
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Duration $m
+     * @return \DCarbone\Go\Time\Duration
+     */
+    public function Truncate(Duration $m): Duration {
+        if (0 >= $m->ns) {
+            return clone $this;
+        }
+        return new Duration($this->ns - $this->ns % $m->ns);
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Duration $m
+     * @return \DCarbone\Go\Time\Duration
+     */
+    public function Round(Duration $m): Duration {
+        if (0 >= $m->ns) {
+            return clone $this;
+        }
+        $r = $this->ns % $m->ns;
+        if (0 > $this->ns) {
+            $r = -$r;
+            // TODO: this might do weird shit if greater than PHP_INT_MAX...
+            if ($r + $r < $m->ns) {
+                return new Duration($this->ns + $r);
+            }
+            $d1 = $this->ns - $m->ns + $r;
+            if ($d1 < $this->ns) {
+                return new Duration($d1);
+            }
+            return new Duration();
+        }
+        // TODO: this might do weird shit if greater than PHP_INT_MAX...
+        if ($r + $r < $m->ns) {
+            return new Duration($this->ns - $r);
+        }
+        $d1 = $this->ns + $m->ns - $r;
+        if ($d1 > $this->ns) {
+            return new Duration($d1);
+        }
+        return new Duration(PHP_INT_MAX);
     }
 
     /**
      * @return \DateTime
      */
     public function DateTime(): \DateTime {
-        return \DateTime::createFromFormat('U', intdiv($this->nanoseconds, Time::Second));
+        return \DateTime::createFromFormat('U', intdiv($this->ns, Time::Second));
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Duration $other
+     * @return int
+     */
+    public function Compare(Duration $other): int {
+        return $this->ns === $other->ns ? 0 : ($this->ns > $other->ns ? 1 : -1);
     }
 
     /**
      * @return int
      */
     public function jsonSerialize() {
-        return $this->nanoseconds;
+        return $this->ns;
     }
 
     /**
@@ -66,14 +117,14 @@ class Duration implements \JsonSerializable {
      * @return string
      */
     public function __toString() {
-        if (0 === $this->nanoseconds) {
+        if (0 === $this->ns) {
             return '0s';
         }
 
         $buff = '';
 
-        $u = $this->nanoseconds;
-        $neg = $this->nanoseconds < 0;
+        $u = $this->ns;
+        $neg = $this->ns < 0;
         if ($neg) {
             $u = -$u;
         }
