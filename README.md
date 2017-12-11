@@ -9,6 +9,11 @@ as basically it is just better than PHP's.
 
 ## Limitations
 
+### Scope
+
+I have no interest in attempting to implement `Timer` or `Ticker`.  This project will purely be limited to the `Time`
+and `Duration` types, with `Duration` taking precedence as it is more immediately useful to me.
+
 ### Precision
 
 PHP sucks at floats.  I recommend you set your precision to ~17.

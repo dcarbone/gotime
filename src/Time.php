@@ -141,41 +141,6 @@ class Time {
         return new Duration($neg ? -$d : $d);
     }
 
-
-    /**
-     * @param string $buff
-     * @param int $v
-     * @param int $prec
-     * @return int
-     */
-    public static function fmtFrac(string &$buff, int $v, int $prec): int {
-        $print = false;
-        for ($i = 0; $i < $prec; $i++) {
-            $digit = $v % 10;
-            $print = $print || $digit !== 0;
-            if ($print) {
-                $buff = "{$digit}{$buff}";
-            }
-            $v = intdiv($v, 10);
-        }
-        if ($print) {
-            $buff = ".{$buff}";
-        }
-        return $v;
-    }
-
-    /**
-     * @param string $buff
-     * @param int $v
-     * @return void
-     */
-    public static function fmtInt(string &$buff, int $v) {
-        while ($v > 0) {
-            $buff = sprintf('%d%s', $v % 10, $buff);
-            $v = intdiv($v, 10);
-        }
-    }
-
     /**
      * @param string $orig
      * @return \InvalidArgumentException

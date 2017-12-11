@@ -50,7 +50,7 @@ class Duration implements \JsonSerializable {
      * @return \DateTime
      */
     public function DateTime(): \DateTime {
-        return \DateTime::createFromFormat('U', $this->Seconds());
+        return \DateTime::createFromFormat('U', (int)$this->Seconds());
     }
 
     /**
@@ -92,29 +92,63 @@ class Duration implements \JsonSerializable {
                     $prec = 6;
                     $buff = 'ms';
             }
-            $u = Time::fmtFrac($buff, $u, $prec);
-            Time::fmtInt($buff, $u);
+            $u = self::fmtFrac($buff, $u, $prec);
+            self::fmtInt($buff, $u);
         } else {
             $buff = "s{$buff}";
-            $u = Time::fmtFrac($buff, $u, 9);
+            $u = self::fmtFrac($buff, $u, 9);
 
-            Time::fmtInt($buff, $u % 60);
+            self::fmtInt($buff, $u % 60);
 
             $u = intdiv($u, 60);
 
             if ($u > 0) {
                 $buff = "m{$buff}";
 
-                Time::fmtInt($buff, $u % 60);
+                self::fmtInt($buff, $u % 60);
                 $u = intdiv($u, 60);
 
                 if ($u > 0) {
                     $buff = "h{$buff}";
-                    Time::fmtInt($buff, $u);
+                    self::fmtInt($buff, $u);
                 }
             }
         }
 
         return $neg ? "-{$buff}" : $buff;
+    }
+
+    /**
+     * @param string $buff
+     * @param int $v
+     * @param int $prec
+     * @return int
+     */
+    private static function fmtFrac(string &$buff, int $v, int $prec): int {
+        $print = false;
+        for ($i = 0; $i < $prec; $i++) {
+            $digit = $v % 10;
+            $print = $print || $digit !== 0;
+            if ($print) {
+                $buff = "{$digit}{$buff}";
+            }
+            $v = intdiv($v, 10);
+        }
+        if ($print) {
+            $buff = ".{$buff}";
+        }
+        return $v;
+    }
+
+    /**
+     * @param string $buff
+     * @param int $v
+     * @return void
+     */
+    private static function fmtInt(string &$buff, int $v) {
+        while ($v > 0) {
+            $buff = sprintf('%d%s', $v % 10, $buff);
+            $v = intdiv($v, 10);
+        }
     }
 }
