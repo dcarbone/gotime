@@ -100,7 +100,14 @@ class DurationTest extends TestCase {
 
         $d = Time::ParseDuration('1h2m3s4ms5us6ns');
         $this->assertInstanceOf(Duration::class, $d);
-        $this->assertEquals(Time::Hour + 2 * Time::Minute + 3 * Time::Second + 4 * Time::Millisecond + 5 * Time::Microsecond + 6 * Time::Nanosecond, $d->Nanoseconds());
+        $this->assertEquals(
+            Time::Hour +
+            2 * Time::Minute +
+            3 * Time::Second +
+            4 * Time::Millisecond +
+            5 * Time::Microsecond +
+            6 * Time::Nanosecond,
+            $d->Nanoseconds());
 
         $d = Time::ParseDuration('1s500ms');
         $this->assertInstanceOf(Duration::class, $d);
@@ -108,11 +115,19 @@ class DurationTest extends TestCase {
     }
 
     /**
+     * @depends testParseDuration
+     * @expectedException \InvalidArgumentException
+     */
+    public function testExceptionThrownWithInvalidDuration() {
+        Time::ParseDuration('922337203685477581ns');
+    }
+
+    /**
      * @param float $expected
      * @param float $actual
      * @return void
      */
-    protected function assertEqualFloats(float $expected, float $actual) {
+    private function assertEqualFloats(float $expected, float $actual) {
         $this->assertLessThanOrEqual(self::ZeroThreshold,
             abs($expected - $actual),
             sprintf('equal assertion fail, %.6f != %.6f', $expected, $actual));
