@@ -1,5 +1,7 @@
 <?php namespace DCarbone\Go;
 
+define('GOTIME_OVERFLOW_INT', intdiv(PHP_INT_MAX, 10));
+
 $p = (int)ini_get('precision');
 if (0 === $p) {
     $p = 17;

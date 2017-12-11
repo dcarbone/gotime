@@ -9,12 +9,17 @@ as basically it is just better than PHP's.
 
 ## Limitations
 
-PHP does not do super good with sub-second time values, and as a result this lib doesn't either.  It's intended purpose
-is more to provide a better / simpler API for some specific use cases.  It does NOT aim to be a replacement for
-[DateTime](http://php.net/manual/en/class.datetime.php), nor will I put for the effort to support all of the features
-of the [time](https://golang.org/src/time) package.  This is just for my own personal amusement and use. 
+### Precision
 
-## Duration
+PHP sucks at floats.  I recommend you set your precision to ~17.
+
+### Sub-Second Time Calculation
+
+PHP sucks at sub-second time manipulation. I don't really aim to fix this.
+
+## Classes
+
+### Duration
 
 The [Duration](src/Time/Duration.php) class is designed to emulate the golang 
 [time.Duration](https://golang.org/src/time/time.go#L620) type.
