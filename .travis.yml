@@ -8,5 +8,8 @@ php:
   - 7.0
   - 7.1
 
+install:
+  - composer install --no-interaction --no-progress --no-suggest --optimize-autoloader
+
 script:
   - ./vendor/bin/phpunit -c phpunit.xml
