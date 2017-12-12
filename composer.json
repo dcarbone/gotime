@@ -15,8 +15,7 @@
     }
   ],
   "require": {
-    "php": ">=7.0",
-    "ext-gmp": "*"
+    "php": ">=7.0"
   },
   "autoload": {
     "files": [
