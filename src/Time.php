@@ -51,7 +51,7 @@ class Time {
         while ('' !== $s) {
             $ord = ord($s[0]);
             // test for: period, less than 0, greater than 9
-            if (48 > $ord || $ord > 57) {
+            if (46 !== $ord && (48 > $ord || $ord > 57)) {
                 throw self::invalidDurationException($orig);
             }
             $v = 0;
@@ -74,7 +74,7 @@ class Time {
 
             $post = false;
             $f = 0;
-            $scale = 0;
+            $scale = 1;
             $overflow = false;
             if ('' !== $s && '.' === $s[0]) {
                 $s = substr($s, 1);
@@ -91,7 +91,7 @@ class Time {
                         $overflow = true;
                         continue;
                     }
-                    $y = $f * 10 + (int)$ord;
+                    $y = $f * 10 + (int)$s[0];
                     if (0 > $y) {
                         $overflow = true;
                         continue;
