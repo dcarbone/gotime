@@ -24,6 +24,33 @@ class Time {
         'h'  => self::Hour,
     ];
 
+    private function __construct() {
+        // not designed to be constructed
+    }
+
+    /**
+     * @return \DCarbone\Go\Time\Time
+     */
+    public static function New(): Time\Time {
+        return new Time\Time('@0');
+    }
+
+    /**
+     * @return \DCarbone\Go\Time\Time
+     */
+    public static function Now(): Time\Time {
+        return Time\Time::createFromFormat('U.u', (float)microtime(true));
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Duration $d1
+     * @param \DCarbone\Go\Time\Duration $d2
+     * @return int
+     */
+    public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int {
+        return $d1->Compare($d2);
+    }
+
     /**
      * @param string $s
      * @return \DCarbone\Go\Time\Duration
@@ -140,14 +167,6 @@ class Time {
         return new Time\Duration($neg ? -$d : $d);
     }
 
-    /**
-     * @param \DCarbone\Go\Time\Duration $d1
-     * @param \DCarbone\Go\Time\Duration $d2
-     * @return int
-     */
-    public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int {
-        return $d1->Compare($d2);
-    }
 
     /**
      * @param string $orig

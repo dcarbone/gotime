@@ -1,21 +1,18 @@
 <?php namespace DCarbone\GoTimeTests;
 
-ini_set('precision', 17);
-
 use DCarbone\Go\Time;
-use DCarbone\Go\Time\Duration;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class DurationTest
+ * Class Time\DurationTest
  * @package DCarbone\GOTimeTests
  */
 class DurationTest extends TestCase {
     const ZeroThreshold = 1.0e-6;
 
     public function testCanConstructEmpty() {
-        $d = new Duration();
-        $this->assertInstanceOf(Duration::class, $d);
+        $d = new Time\Duration();
+        $this->assertInstanceOf(Time\Duration::class, $d);
     }
 
     /**
@@ -23,12 +20,12 @@ class DurationTest extends TestCase {
      */
     public function testCanConstructWithValue() {
         $n = time() * Time::Second;
-        $d = new Duration($n);
-        $this->assertInstanceOf(Duration::class, $d);
+        $d = new Time\Duration($n);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals($n, $d->Nanoseconds());
 
-        $d = new Duration(-1);
-        $this->assertInstanceOf(Duration::class, $d);
+        $d = new Time\Duration(-1);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(-1, $d->Nanoseconds());
     }
 
@@ -36,13 +33,13 @@ class DurationTest extends TestCase {
      * @depends testCanConstructWithValue
      */
     public function testTruncate() {
-        $d = new Duration(Time::Second);
-        $td = $d->Truncate(new Duration(500 * Time::Millisecond));
+        $d = new Time\Duration(Time::Second);
+        $td = $d->Truncate(new Time\Duration(500 * Time::Millisecond));
         $this->assertNotSame($d, $td);
         $this->assertEquals(Time::Second, $td->Nanoseconds());
-        $td = $d->Truncate(new Duration(1001 * Time::Millisecond));
+        $td = $d->Truncate(new Time\Duration(1001 * Time::Millisecond));
         $this->assertEquals(0, $td->Nanoseconds());
-        $td = $d->Truncate(new Duration(-1));
+        $td = $d->Truncate(new Time\Duration(-1));
         $this->assertEquals(Time::Second, $td->Nanoseconds());
     }
 
@@ -50,11 +47,11 @@ class DurationTest extends TestCase {
      * @depends testCanConstructWithValue
      */
     public function testRound() {
-        $d = new Duration(Time::Second);
-        $td = $d->Round(new Duration(500 * Time::Millisecond));
+        $d = new Time\Duration(Time::Second);
+        $td = $d->Round(new Time\Duration(500 * Time::Millisecond));
         $this->assertNotSame($d, $td);
         $this->assertEquals(Time::Second, $td->Nanoseconds());
-        $td = $d->Round(new Duration(5 * Time::Second));
+        $td = $d->Round(new Time\Duration(5 * Time::Second));
         $this->assertEquals(0, $td->Nanoseconds());
     }
 
@@ -63,63 +60,63 @@ class DurationTest extends TestCase {
      */
     public function testParseDuration() {
         $d = Time::ParseDuration('1ns');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1, $d->Nanoseconds());
         $this->assertEquals(1e-9, $d->Seconds());
 
         $d = Time::ParseDuration('1us');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1e3, $d->Nanoseconds());
         $this->assertEqualFloats(1e-6, $d->Seconds());
 
         $d = Time::ParseDuration('1µs');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1e3, $d->Nanoseconds());
         $this->assertEqualFloats(1e-6, $d->Seconds());
 
         $d = Time::ParseDuration('1μs');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1e3, $d->Nanoseconds());
         $this->assertEqualFloats(1e-6, $d->Seconds());
 
         $d = Time::ParseDuration('1ms');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1e6, $d->Nanoseconds());
         $this->assertEqualFloats(1e-3, $d->Seconds());
 
         $d = Time::ParseDuration('1s');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1e9, $d->Nanoseconds());
         $this->assertEqualFloats(1.0, $d->Seconds());
 
         $d = Time::ParseDuration('1m');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(Time::Minute, $d->Nanoseconds());
         $this->assertEqualFloats(60.0, $d->Seconds());
 
         $d = Time::ParseDuration('1h');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(Time::Hour, $d->Nanoseconds());
         $this->assertEqualFloats(3600.0, $d->Seconds());
 
         $d = Time::ParseDuration('1h0m');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(Time::Hour, $d->Nanoseconds());
 
         $d = Time::ParseDuration('0m0s');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(0, $d->Nanoseconds());
 
         $d = Time::ParseDuration('1.5s');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1.5e9, $d->Nanoseconds());
 
         $d = Time::ParseDuration('1.5h2ns');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(Time::Hour + 30 * Time::Minute + 2 * Time::Nanosecond, $d->Nanoseconds());
 
         $d = Time::ParseDuration('1h2m3s4ms5us6ns');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(
             Time::Hour +
             2 * Time::Minute +
@@ -130,7 +127,7 @@ class DurationTest extends TestCase {
             $d->Nanoseconds());
 
         $d = Time::ParseDuration('1s500ms');
-        $this->assertInstanceOf(Duration::class, $d);
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEqualFloats(1.5, $d->Seconds());
     }
 
@@ -145,27 +142,13 @@ class DurationTest extends TestCase {
     /**
      * @depends testParseDuration
      */
-    public function testCanGetDateTime() {
-        $n = time();
-        $d = Time::ParseDuration(sprintf('%ds', $n));
-        $this->assertInstanceOf(Duration::class, $d);
-        $this->assertEqualFloats((float)$n, $d->Seconds());
-
-        $dt = $d->DateTime();
-        $this->assertInstanceOf(\DateTime::class, $dt);
-        $this->assertEqualFloats($d->Seconds(), (float)$dt->format('U'));
-    }
-
-    /**
-     * @depends testParseDuration
-     */
     public function testStringer() {
-        $this->assertEquals('500ms', (string)new Duration(500 * Time::Millisecond));
-        $this->assertEquals('500µs', (string)new Duration(500 * Time::Microsecond));
-        $this->assertEquals('500ns', (string)new Duration(500 * Time::Nanosecond));
+        $this->assertEquals('500ms', (string)new Time\Duration(500 * Time::Millisecond));
+        $this->assertEquals('500µs', (string)new Time\Duration(500 * Time::Microsecond));
+        $this->assertEquals('500ns', (string)new Time\Duration(500 * Time::Nanosecond));
 
         $now = time();
-        $d = new Duration($now * Time::Second);
+        $d = new Time\Duration($now * Time::Second);
         preg_match('/^(\d+)h(\d+)m(\d+)s$/', (string)$d, $matches);
         $this->assertEquals((int)$d->Hours(), (int)$matches[1]);
         $t = \DateTime::createFromFormat('U', $now, new \DateTimeZone('UTC'));
@@ -180,10 +163,12 @@ class DurationTest extends TestCase {
             sprintf('Second mismatch: %d %d', $matches[3], $t->format('s'))
         );
 
-        $s = '1h30m';
-        $d = Time::ParseDuration($s);
-        $this->assertInstanceOf(Duration::class, $d);
+        $d = Time::ParseDuration('1h30m');
+        $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals('1h30m0s', (string)$d);
+
+        $d = Time::ParseDuration('1h2m3s4ms5us6ns');
+        $this->assertEquals('1h2m3.004005006s', (string)$d);
     }
 
     /**
@@ -193,6 +178,64 @@ class DurationTest extends TestCase {
         $d1 = Time::ParseDuration('5s');
         $this->assertEquals(1, $d1->Compare(Time::ParseDuration('1s')));
         $this->assertEquals(0, $d1->Compare(Time::ParseDuration('5s')));
+    }
+
+    public function testIntervalSpec() {
+        $d = new Time\Duration();
+        $spec = $d->IntervalSpec();
+        $this->assertInstanceOf(Time\IntervalSpec::class, $spec);
+        $this->assertEquals('PT0S', $spec->spec);
+        $this->assertEquals(0.0, $spec->f);
+        $this->assertFalse($spec->invert);
+
+        $d = new Time\Duration(3600 * Time::Hour + 5 * Time::Minute + 3 * Time::Millisecond);
+        $spec = $d->IntervalSpec();
+        $this->assertInstanceOf(Time\IntervalSpec::class, $spec);
+        $this->assertEquals('PT3600H5M0S', $spec->spec);
+        $this->assertEquals(0.003, $spec->f);
+        $this->assertFalse($spec->invert);
+
+        $d = new Time\Duration(-500 * Time::Second);
+        $spec = $d->IntervalSpec();
+        $this->assertInstanceOf(Time\IntervalSpec::class, $spec);
+        $this->assertEquals('PT8M20S', $spec->spec);
+        $this->assertEquals(0.0, $spec->f);
+        $this->assertTrue($spec->invert);
+    }
+
+    public function testDateInterval() {
+        $d = new Time\Duration();
+        $di = $d->DateInterval();
+        $this->assertInstanceOf(\DateInterval::class, $di);
+        $this->assertEquals(0.0, $di->f, 'Sub-seconds mismatch');
+        $this->assertEquals(0, $di->s, 'Seconds mismatch');
+        $this->assertEquals(0, $di->i, 'Minutes mismatch');
+        $this->assertEquals(0, $di->h, 'Hours mismatch');
+        $this->assertEquals(0, $di->days, 'Days mismatch');
+        $this->assertEquals(0, $di->m, 'Months mismatch');
+        $this->assertEquals(0, $di->y, 'Years mismatch');
+        $this->assertEquals(0, $di->invert, 'Inversion mismatch');
+
+        $d = new Time\Duration(3 * Time::Hour + 120 * Time::Minute + 5 * Time::Second);
+        $di = $d->DateInterval();
+        $this->assertInstanceOf(\DateInterval::class, $di);
+        $this->assertEquals(0.0, $di->f, 'Sub-seconds mismatch');
+        $this->assertEquals(5, $di->s, 'Seconds mismatch');
+        $this->assertEquals(0, $di->i, 'Minutes mismatch');
+        $this->assertEquals(5, $di->h, 'Hours mismatch');
+        $this->assertEquals(0, $di->invert, 'Inversion mismatch');
+
+        $d = new Time\Duration(-1000 * Time::Millisecond);
+        $di = $d->DateInterval();
+        $this->assertInstanceOf(\DateInterval::class, $di);
+        $this->assertEquals(1, $di->s, 'Seconds mismatch');
+        $this->assertEquals(1, $di->invert, 'Inversion mismatch');
+
+        $d = new Time\Duration(-50 * Time::Microsecond);
+        $di = $d->DateInterval();
+        $this->assertInstanceOf(\DateInterval::class, $di);
+        $this->assertEquals(0.00005, $di->f);
+        $this->assertEquals(1, $di->invert);
     }
 
     /**

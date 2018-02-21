@@ -90,18 +90,58 @@ class Duration implements \JsonSerializable {
     }
 
     /**
-     * @return \DateTime
-     */
-    public function DateTime(): \DateTime {
-        return \DateTime::createFromFormat('U', intdiv($this->ns, Time::Second));
-    }
-
-    /**
      * @param \DCarbone\Go\Time\Duration $other
      * @return int
      */
     public function Compare(Duration $other): int {
         return $this->ns === $other->ns ? 0 : ($this->ns > $other->ns ? 1 : -1);
+    }
+
+    /**
+     * @return \DCarbone\Go\Time\IntervalSpec
+     */
+    public function IntervalSpec(): IntervalSpec {
+        $neg = 0 > $this->ns;
+        $u = $neg ? -$this->ns : $this->ns;
+
+        $spec = new IntervalSpec();
+
+        if ($u < Time::Microsecond) {
+            $spec->spec = 'PT0S';
+            return $spec;
+        }
+
+        $u = intdiv($u, Time::Microsecond);
+
+        $buff = '';
+        $u = self::fmtFrac($buff, $u, 6);
+        $spec->f = (float)$buff;
+
+        $buff = 'S';
+        self::fmtInt($buff, $u % 60);
+        $u = intdiv($u, 60);
+        if ($u > 0) {
+            $buff = "M{$buff}";
+            self::fmtInt($buff, $u % 60);
+            $u = intdiv($u, 60);
+            if ($u > 0) {
+                $buff = "H{$buff}";
+                self::fmtInt($buff, $u);
+            }
+        }
+
+        $spec->invert = $neg;
+        $spec->spec = sprintf('PT%s', $buff);
+
+        return $spec;
+    }
+
+    /**
+     * @return \DateInterval
+     * @throws \Exception
+     */
+    public function DateInterval(): \DateInterval {
+        return DateInterval::fromIntervalSpec($this->IntervalSpec());
     }
 
     /**
@@ -116,37 +156,29 @@ class Duration implements \JsonSerializable {
      *
      * @return string
      */
-    public function __toString() {
+    public function __toString(): string {
         if (0 === $this->ns) {
             return '0s';
         }
 
-        $buff = '';
-
-        $u = $this->ns;
         $neg = $this->ns < 0;
-        if ($neg) {
-            $u = -$u;
-        }
+        $u = $neg ? -$this->ns : $this->ns;
 
         if ($u < Time::Second) {
-            $prec = 0;
-            switch (true) {
-                case $u < Time::Microsecond:
-                    $buff = 'ns';
-                    break;
-                case $u < Time::Millisecond:
-                    $prec = 3;
-                    $buff = 'µs';
-                    break;
-                default:
-                    $prec = 6;
-                    $buff = 'ms';
+            if ($u < Time::Microsecond) {
+                $prec = 0;
+                $buff = 'ns';
+            } else if ($u < Time::Millisecond) {
+                $prec = 3;
+                $buff = 'µs';
+            } else {
+                $prec = 6;
+                $buff = 'ms';
             }
             $u = self::fmtFrac($buff, $u, $prec);
             self::fmtInt($buff, $u);
         } else {
-            $buff = "s{$buff}";
+            $buff = 's';
             $u = self::fmtFrac($buff, $u, 9);
 
             self::fmtInt($buff, $u % 60);
