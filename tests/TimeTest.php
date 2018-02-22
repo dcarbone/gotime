@@ -75,7 +75,7 @@ class TimeTest extends TestCase {
         $this->assertEquals((int)gmdate('U', $s), $time->Unix()); // TODO: mildly redundant
 
         // difficult to really assert, but maybe assume a small range of acceptance?
-        $this->assertGreaterThanOrEqual($ns, $time->UnixNano());
+        $this->assertTrue(($ns + 500 * Time::Millisecond > $time->UnixNano()) || ($ns - 500 * Time::Millisecond < $time->UnixNano()));
     }
 
     public function testBefore() {
