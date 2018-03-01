@@ -75,70 +75,83 @@ class TimeTest extends TestCase {
         $this->assertEquals((int)gmdate('U', $s), $time->Unix()); // TODO: mildly redundant
 
         // difficult to really assert, but maybe assume a small range of acceptance?
-        $this->assertTrue(($ns + 500 * Time::Millisecond > $time->UnixNano()) || ($ns - 500 * Time::Millisecond < $time->UnixNano()));
+        $this->assertTrue(($ns + 500 * Time::Millisecond > $time->UnixNano()) ||
+            ($ns - 500 * Time::Millisecond < $time->UnixNano()));
     }
 
     public function testBefore() {
         $t1 = Time::Now();
 
         $t2 = Time::Now();
-        $t2->AddDuration(new Time\Duration(5 * Time::Hour));
+        $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Hour));
         $this->assertTrue($t1->Before($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
-        $t2->SubDuration(new Time\Duration(5 * Time::Hour));
+        $t3 = $t2->SubDuration(new Time\Duration(5 * Time::Hour));
         $this->assertFalse($t1->Before($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
-        $t2->AddDuration(new Time\Duration(-5 * Time::Hour));
+        $t3 = $t2->AddDuration(new Time\Duration(-5 * Time::Hour));
         $this->assertFalse($t1->Before($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
-        $t2->AddDuration(new Time\Duration(5 * Time::Microsecond));
+        $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Microsecond));
         $this->assertTrue($t1->Before($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
     }
 
     public function testBeforeDateTime() {
         $t = Time::Now();
 
         $dt = new \DateTime();
-        $dt->add(new \DateInterval('PT1H'));
+        $dt2 = $dt->add(new \DateInterval('PT1H'));
         $this->assertTrue($t->BeforeDateTime($dt));
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
-        $dt->add(new Time\DateInterval('PT0S', true, 0.5));
+        $dt2 = $dt->add(new Time\DateInterval('PT0S', true, 0.5));
         $this->assertFalse($t->BeforeDateTime($dt));
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 
     public function testAfter() {
         $t1 = Time::Now();
 
         $t2 = Time::Now();
-        $t2->AddDuration(new Time\Duration(5 * Time::Second));
+        $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Second));
         $this->assertFalse($t1->After($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
-        $t2->SubDuration(new Time\Duration(5 * Time::Second));
+        $t3 = $t2->SubDuration(new Time\Duration(5 * Time::Second));
         $this->assertTrue($t1->After($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
-        $t2->AddDuration(new Time\Duration(-5 * Time::Second));
+        $t3 = $t2->AddDuration(new Time\Duration(-5 * Time::Second));
         $this->assertTrue($t1->After($t2));
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
     }
 
     public function testAfterDateTime() {
         $t = Time::Now();
 
         $dt = new \DateTime();
-        $dt->sub(new Time\DateInterval('PT5S'));
+        $dt2 = $dt->sub(new Time\DateInterval('PT5S'));
         $this->assertTrue($t->AfterDateTime($dt));
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
-        $dt->add(new Time\DateInterval('PT5S', true));
+        $dt2 = $dt->add(new Time\DateInterval('PT5S', true));
         $this->assertTrue($t->AfterDateTime($dt));
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
-        $dt->add(new Time\DateInterval('PT5S'));
+        $dt2 = $dt->add(new Time\DateInterval('PT5S'));
         $this->assertFalse($t->AfterDateTime($dt));
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 }

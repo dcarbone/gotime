@@ -120,6 +120,13 @@ class Time extends \DateTime {
     }
 
     /**
+     * @return \DCarbone\Go\Time\Duration
+     */
+    public function UnixNanoDuration(): Duration {
+        return new Duration($this->UnixNano());
+    }
+
+    /**
      * @return bool
      */
     public function IsZero(): bool {
@@ -164,18 +171,20 @@ class Time extends \DateTime {
 
     /**
      * @param \DCarbone\Go\Time\Duration $d
+     * @return \DCarbone\Go\Time\Time
      * @throws \Exception
      */
-    public function AddDuration(Duration $d) {
-        $this->add($d->DateInterval());
+    public function AddDuration(Duration $d): Time {
+        return $this->add($d->DateInterval());
     }
 
     /**
      * @param \DCarbone\Go\Time\Duration $d
+     * @return \DCarbone\Go\Time\Time
      * @throws \Exception
      */
-    public function SubDuration(Duration $d) {
-        $this->sub($d->DateInterval());
+    public function SubDuration(Duration $d): Time {
+        return $this->sub($d->DateInterval());
     }
 
     /**
