@@ -77,6 +77,12 @@ class TimeTest extends TestCase {
         // difficult to really assert, but maybe assume a small range of acceptance?
         $this->assertTrue(($ns + 500 * Time::Millisecond > $time->UnixNano()) ||
             ($ns - 500 * Time::Millisecond < $time->UnixNano()));
+
+        // for 1 million iterations, call ::Now() just to MAYBE HOPEFULLY catch ridiculousness...
+        for ($i = 0; $i < 1000000; $i++) {
+            Time::Now();
+        }
+        exit;
     }
 
     public function testBefore() {

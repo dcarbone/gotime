@@ -39,7 +39,7 @@ class Time {
      * @return \DCarbone\Go\Time\Time
      */
     public static function Now(): Time\Time {
-        return Time\Time::createFromFormat('U.u', (float)microtime(true));
+        return Time\Time::createFromFormat('0.u00 U', microtime());
     }
 
     /**
