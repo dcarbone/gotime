@@ -10,6 +10,9 @@ use DCarbone\Go\Time as TimeNS;
  */
 class Time extends \DateTime {
 
+    const DefaultFormat = 'Y-m-d H:i:s.u000 O e';
+    const DefaultFormatNoSubSeconds = 'Y-m-d H:i:s O e';
+
     /** @var array */
     protected static $lastErrors = [];
 
@@ -192,8 +195,8 @@ class Time extends \DateTime {
      */
     public function __toString(): string {
         if (0 === $this->Nanosecond()) {
-            return $this->format('Y-m-d H:i:s O e');
+            return $this->format(self::DefaultFormatNoSubSeconds);
         }
-        return $this->format('Y-m-d H:i:s.u000 O e');
+        return $this->format(self::DefaultFormat);
     }
 }

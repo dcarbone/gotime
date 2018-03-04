@@ -89,22 +89,22 @@ class TimeTest extends TestCase {
 
         $t2 = Time::Now();
         $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Hour));
-        $this->assertTrue($t1->Before($t2));
+        $this->assertTrue($t1->Before($t2), 'Expected '.$t1.' to be before '.$t2);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
         $t3 = $t2->SubDuration(new Time\Duration(5 * Time::Hour));
-        $this->assertFalse($t1->Before($t2));
+        $this->assertFalse($t1->Before($t2), 'Expected '.$t2.' to be before '.$t1);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
         $t3 = $t2->AddDuration(new Time\Duration(-5 * Time::Hour));
-        $this->assertFalse($t1->Before($t2));
+        $this->assertFalse($t1->Before($t2), 'Expected '.$t2.' to be before '.$t1);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
         $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Microsecond));
-        $this->assertTrue($t1->Before($t2));
+        $this->assertTrue($t1->Before($t2), 'Expected '.$t1.' to be before '.$t2);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
     }
 
@@ -113,12 +113,14 @@ class TimeTest extends TestCase {
 
         $dt = new \DateTime();
         $dt2 = $dt->add(new \DateInterval('PT1H'));
-        $this->assertTrue($t->BeforeDateTime($dt));
+        $this->assertTrue($t->BeforeDateTime($dt),
+            'Expected '.$t.' to be before '.$dt->format(Time\Time::DefaultFormat));
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
         $dt2 = $dt->add(new Time\DateInterval('PT0S', true, 0.5));
-        $this->assertFalse($t->BeforeDateTime($dt));
+        $this->assertFalse($t->BeforeDateTime($dt),
+            'Expected '.$dt->format(Time\Time::DefaultFormat).' to be before '.$t);
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 
@@ -127,17 +129,17 @@ class TimeTest extends TestCase {
 
         $t2 = Time::Now();
         $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Second));
-        $this->assertFalse($t1->After($t2));
+        $this->assertFalse($t1->After($t2), 'Expected '.$t2.' to be after '.$t1);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
         $t3 = $t2->SubDuration(new Time\Duration(5 * Time::Second));
-        $this->assertTrue($t1->After($t2));
+        $this->assertTrue($t1->After($t2), 'Expected '.$t1.' to be after '.$t2);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
         $t2 = Time::Now();
         $t3 = $t2->AddDuration(new Time\Duration(-5 * Time::Second));
-        $this->assertTrue($t1->After($t2));
+        $this->assertTrue($t1->After($t2), 'Expected '.$t1.' to be after '.$t2);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
     }
 
@@ -146,17 +148,18 @@ class TimeTest extends TestCase {
 
         $dt = new \DateTime();
         $dt2 = $dt->sub(new Time\DateInterval('PT5S'));
-        $this->assertTrue($t->AfterDateTime($dt));
+        $this->assertTrue($t->AfterDateTime($dt), 'Expected '.$t.' to be after '.$dt->format(Time\Time::DefaultFormat));
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
         $dt2 = $dt->add(new Time\DateInterval('PT5S', true));
-        $this->assertTrue($t->AfterDateTime($dt));
+        $this->assertTrue($t->AfterDateTime($dt), 'Expected '.$t.' to be after '.$dt->format(Time\Time::DefaultFormat));
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
         $dt = new \DateTime();
         $dt2 = $dt->add(new Time\DateInterval('PT5S'));
-        $this->assertFalse($t->AfterDateTime($dt));
+        $this->assertFalse($t->AfterDateTime($dt),
+            'Expected '.$dt->format(Time\Time::DefaultFormat).' to be after '.$t);
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 }
