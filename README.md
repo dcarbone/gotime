@@ -8,20 +8,14 @@ Golang-like time class(es) for PHP 7.0+
 The goal of this lib is to achieve near-enough (as determined by me) api equivalency in PHP to the GoLang Time package,
 as basically it is just better than PHP's.
 
-## Limitations
-
-### Scope
-
-I have no interest in attempting to implement `Timer` or `Ticker`.  This project will purely be limited to the `Time`
-and `Duration` types, with `Duration` taking precedence as it is more immediately useful to me.
-
-### Precision
-
-PHP sucks at floats.  I recommend you set your precision to ~17.
+## Limitations 
 
 ### Sub-Second Time Calculation
 
-PHP sucks at sub-second time manipulation. I don't really aim to fix this.
+While PHP 7.0+ support creating a \DateTime object with sub-second precision down to microseconds, only PHP 7.1+ support
+incrementing / decrementing microseconds via the `\DateTime::add` and `\DateTime::sub` methods.  If you use
+this library with 7.0, you will NOT be able to manipulate the sub-second values of the [Time\Time](./src/Time/Time.php)
+class after construction!
 
 ## Classes
 
