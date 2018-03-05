@@ -47,7 +47,7 @@ class Time extends \DateTime {
             }
             $errstr = sprintf('%sErrors: ["%s"]', $errstr, implode('", "', $errs['errors'] ?? []));
         }
-        return '' === $errstr ? 'no errors reported' : '';
+        return $errstr;
     }
 
     /**
