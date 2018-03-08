@@ -129,6 +129,14 @@ class DurationTest extends TestCase {
         $d = Time::ParseDuration('1s500ms');
         $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEqualFloats(1.5, $d->Seconds());
+
+        $d = Time::ParseDuration('0.05s');
+        $this->assertInstanceOf(Time\Duration::class, $d);
+        $this->assertEquals(0.05, $d->Seconds());
+
+        $d = Time::ParseDuration('1.05s');
+        $this->assertInstanceOf(Time\Duration::class, $d);
+        $this->assertEquals(1.05, $d->Seconds());
     }
 
     /**
