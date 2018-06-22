@@ -1,10 +1,13 @@
-<?php namespace DCarbone\Go\Time;
+<?php declare(strict_types=1);
+
+namespace DCarbone\Go\Time;
 
 /**
  * Class IntervalSpec
  * @package DCarbone\Go\Time
  */
-class IntervalSpec {
+class IntervalSpec
+{
     /** @var string */
     public $spec = '';
     /** @var bool */
@@ -15,10 +18,11 @@ class IntervalSpec {
     /**
      * IntervalSpec constructor.
      * @param string $spec
-     * @param bool $invert
-     * @param float $f
+     * @param bool   $invert
+     * @param float  $f
      */
-    public function __construct(string $spec = '', bool $invert = false, float $f = 0.0) {
+    public function __construct(string $spec = '', bool $invert = false, float $f = 0.0)
+    {
         $this->spec = $spec;
         $this->invert = $invert;
         $this->f = $f;

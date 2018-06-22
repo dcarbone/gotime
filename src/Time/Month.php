@@ -1,10 +1,13 @@
-<?php namespace DCarbone\Go\Time;
+<?php declare(strict_types=1);
+
+namespace DCarbone\Go\Time;
 
 /**
  * Class Month
  * @package DCarbone\Go\Time
  */
-class Month implements \JsonSerializable {
+class Month implements \JsonSerializable
+{
     /** @var array */
     private static $months = [
         1  => 'January',
@@ -44,7 +47,8 @@ class Month implements \JsonSerializable {
      * Month constructor.
      * @param int $m
      */
-    public function __construct(int $m = 1) {
+    public function __construct(int $m = 1)
+    {
         if (isset(self::$months[$m])) {
             $this->m = $m;
         }
@@ -53,7 +57,8 @@ class Month implements \JsonSerializable {
     /**
      * @return int
      */
-    public function Ord(): int {
+    public function Ord(): int
+    {
         return $this->m;
     }
 
@@ -61,28 +66,32 @@ class Month implements \JsonSerializable {
      * @param int $ord
      * @return bool
      */
-    public function Is(int $ord): bool {
+    public function Is(int $ord): bool
+    {
         return $this->m === $ord;
     }
 
     /**
      * @return string
      */
-    public function Short(): string {
+    public function Short(): string
+    {
         return self::$short[$this->m] ?? 'UNK';
     }
 
     /**
      * @return string
      */
-    public function __toString(): string {
+    public function __toString(): string
+    {
         return self::$months[$this->m] ?? 'UNKNOWN';
     }
 
     /**
      * @return string
      */
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         return (string)$this;
     }
 }

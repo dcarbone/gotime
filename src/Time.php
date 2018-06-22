@@ -1,16 +1,19 @@
-<?php namespace DCarbone\Go;
+<?php declare(strict_types=1);
+
+namespace DCarbone\Go;
 
 /**
  * Class Time
  * @package DCarbone\Go
  */
-class Time {
-    const Nanosecond = 1;
+class Time
+{
+    const Nanosecond  = 1;
     const Microsecond = 1000 * self::Nanosecond;
     const Millisecond = 1000 * self::Microsecond;
-    const Second = 1000 * self::Millisecond;
-    const Minute = 60 * self::Second;
-    const Hour = 60 * self::Minute;
+    const Second      = 1000 * self::Millisecond;
+    const Minute      = 60 * self::Second;
+    const Hour        = 60 * self::Minute;
 
     /** @var array */
     private static $unitMap = [
@@ -24,26 +27,29 @@ class Time {
         'h'  => self::Hour,
     ];
 
-    private function __construct() {
+    private function __construct()
+    {
         // not designed to be constructed
     }
 
     /**
      * @return \DCarbone\Go\Time\Time
      */
-    public static function New(): Time\Time {
+    public static function New(): Time\Time
+    {
         return new Time\Time('@0');
     }
 
     /**
      * @return \DCarbone\Go\Time\Time
      */
-    public static function Now(): Time\Time {
+    public static function Now(): Time\Time
+    {
         $mt = microtime();
         if (GOTIME_GTE71) {
             return Time\Time::createFromFormat('0.u00 U', $mt);
         }
-        return Time\Time::createFromFormat('U.u', substr($mt, strpos($mt, ' ') + 1).'.'.substr($mt, 2, 6));
+        return Time\Time::createFromFormat('U.u', substr($mt, strpos($mt, ' ') + 1) . '.' . substr($mt, 2, 6));
     }
 
     /**
@@ -51,7 +57,8 @@ class Time {
      * @param \DCarbone\Go\Time\Duration $d2
      * @return int
      */
-    public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int {
+    public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int
+    {
         return $d1->Compare($d2);
     }
 
@@ -59,7 +66,8 @@ class Time {
      * @param string $s
      * @return \DCarbone\Go\Time\Duration
      */
-    public static function ParseDuration(string $s): Time\Duration {
+    public static function ParseDuration(string $s): Time\Duration
+    {
         if (0 === strlen($s)) {
             throw self::invalidDurationException($s);
         }
@@ -75,7 +83,7 @@ class Time {
 
         if ('0' === $s) {
             return new Time\Duration();
-        } else if ('' === $s) {
+        } elseif ('' === $s) {
             throw self::invalidDurationException($orig);
         }
 
@@ -175,7 +183,8 @@ class Time {
      * @param string $orig
      * @return \InvalidArgumentException
      */
-    private static function invalidDurationException(string $orig): \InvalidArgumentException {
+    private static function invalidDurationException(string $orig): \InvalidArgumentException
+    {
         return new \InvalidArgumentException("Invalid duration: {$orig}");
     }
 
@@ -184,7 +193,8 @@ class Time {
      * @param string $orig
      * @return \InvalidArgumentException
      */
-    private static function invalidDurationUnitException(string $unit, string $orig): \InvalidArgumentException {
+    private static function invalidDurationUnitException(string $unit, string $orig): \InvalidArgumentException
+    {
         return new \InvalidArgumentException("Unknown unit {$unit} in duration {$orig}");
     }
 }

@@ -1,4 +1,6 @@
-<?php namespace DCarbone\Go\Time;
+<?php declare(strict_types=1);
+
+namespace DCarbone\Go\Time;
 
 use DCarbone\Go\Time;
 
@@ -6,7 +8,8 @@ use DCarbone\Go\Time;
  * Class Duration
  * @package DCarbone\GOTime
  */
-class Duration implements \JsonSerializable {
+class Duration implements \JsonSerializable
+{
     /** @var int */
     private $ns = 0;
 
@@ -14,35 +17,40 @@ class Duration implements \JsonSerializable {
      * TimeDuration constructor.
      * @param int $nanoseconds
      */
-    public function __construct(int $nanoseconds = 0) {
+    public function __construct(int $nanoseconds = 0)
+    {
         $this->ns = $nanoseconds;
     }
 
     /**
      * @return int
      */
-    public function Nanoseconds(): int {
+    public function Nanoseconds(): int
+    {
         return $this->ns;
     }
 
     /**
      * @return float
      */
-    public function Seconds(): float {
+    public function Seconds(): float
+    {
         return $this->ns / Time::Second;
     }
 
     /**
      * @return float
      */
-    public function Minutes(): float {
+    public function Minutes(): float
+    {
         return $this->ns / Time::Minute;
     }
 
     /**
      * @return float
      */
-    public function Hours(): float {
+    public function Hours(): float
+    {
         return $this->ns / Time::Hour;
     }
 
@@ -50,7 +58,8 @@ class Duration implements \JsonSerializable {
      * @param \DCarbone\Go\Time\Duration $m
      * @return \DCarbone\Go\Time\Duration
      */
-    public function Truncate(Duration $m): Duration {
+    public function Truncate(Duration $m): Duration
+    {
         if (0 >= $m->ns) {
             return clone $this;
         }
@@ -61,7 +70,8 @@ class Duration implements \JsonSerializable {
      * @param \DCarbone\Go\Time\Duration $m
      * @return \DCarbone\Go\Time\Duration
      */
-    public function Round(Duration $m): Duration {
+    public function Round(Duration $m): Duration
+    {
         if (0 >= $m->ns) {
             return clone $this;
         }
@@ -93,14 +103,25 @@ class Duration implements \JsonSerializable {
      * @param \DCarbone\Go\Time\Duration $other
      * @return int
      */
-    public function Compare(Duration $other): int {
+    public function Compare(Duration $other): int
+    {
         return $this->ns === $other->ns ? 0 : ($this->ns > $other->ns ? 1 : -1);
+    }
+
+    /**
+     * @return \DateInterval
+     * @throws \Exception
+     */
+    public function DateInterval(): \DateInterval
+    {
+        return DateInterval::fromIntervalSpec($this->IntervalSpec());
     }
 
     /**
      * @return \DCarbone\Go\Time\IntervalSpec
      */
-    public function IntervalSpec(): IntervalSpec {
+    public function IntervalSpec(): IntervalSpec
+    {
         $neg = 0 > $this->ns;
         $u = $neg ? -$this->ns : $this->ns;
 
@@ -137,17 +158,50 @@ class Duration implements \JsonSerializable {
     }
 
     /**
-     * @return \DateInterval
-     * @throws \Exception
+     * @param string $buff
+     * @param int    $v
+     * @param int    $prec
+     * @return int
      */
-    public function DateInterval(): \DateInterval {
-        return DateInterval::fromIntervalSpec($this->IntervalSpec());
+    private static function fmtFrac(string &$buff, int $v, int $prec): int
+    {
+        $print = false;
+        for ($i = 0; $i < $prec; $i++) {
+            $digit = $v % 10;
+            $print = $print || $digit !== 0;
+            if ($print) {
+                $buff = "{$digit}{$buff}";
+            }
+            $v = intdiv($v, 10);
+        }
+        if ($print) {
+            $buff = ".{$buff}";
+        }
+        return $v;
+    }
+
+    /**
+     * @param string $buff
+     * @param int    $v
+     * @return void
+     */
+    private static function fmtInt(string &$buff, int $v)
+    {
+        if (0 === $v) {
+            $buff = "0{$buff}";
+        } else {
+            while ($v > 0) {
+                $buff = sprintf('%d%s', $v % 10, $buff);
+                $v = intdiv($v, 10);
+            }
+        }
     }
 
     /**
      * @return int
      */
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         return $this->ns;
     }
 
@@ -156,7 +210,8 @@ class Duration implements \JsonSerializable {
      *
      * @return string
      */
-    public function __toString(): string {
+    public function __toString(): string
+    {
         if (0 === $this->ns) {
             return '0s';
         }
@@ -168,7 +223,7 @@ class Duration implements \JsonSerializable {
             if ($u < Time::Microsecond) {
                 $prec = 0;
                 $buff = 'ns';
-            } else if ($u < Time::Millisecond) {
+            } elseif ($u < Time::Millisecond) {
                 $prec = 3;
                 $buff = 'µs';
             } else {
@@ -199,43 +254,5 @@ class Duration implements \JsonSerializable {
         }
 
         return $neg ? "-{$buff}" : $buff;
-    }
-
-    /**
-     * @param string $buff
-     * @param int $v
-     * @param int $prec
-     * @return int
-     */
-    private static function fmtFrac(string &$buff, int $v, int $prec): int {
-        $print = false;
-        for ($i = 0; $i < $prec; $i++) {
-            $digit = $v % 10;
-            $print = $print || $digit !== 0;
-            if ($print) {
-                $buff = "{$digit}{$buff}";
-            }
-            $v = intdiv($v, 10);
-        }
-        if ($print) {
-            $buff = ".{$buff}";
-        }
-        return $v;
-    }
-
-    /**
-     * @param string $buff
-     * @param int $v
-     * @return void
-     */
-    private static function fmtInt(string &$buff, int $v) {
-        if (0 === $v) {
-            $buff = "0{$buff}";
-        } else {
-            while ($v > 0) {
-                $buff = sprintf('%d%s', $v % 10, $buff);
-                $v = intdiv($v, 10);
-            }
-        }
     }
 }

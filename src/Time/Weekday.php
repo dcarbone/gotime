@@ -1,10 +1,13 @@
-<?php namespace DCarbone\Go\Time;
+<?php declare(strict_types=1);
+
+namespace DCarbone\Go\Time;
 
 /**
  * Class Weekday
  * @package DCarbone\Go\Time
  */
-class Weekday implements \JsonSerializable {
+class Weekday implements \JsonSerializable
+{
     /** @var array */
     private static $weekdays = [
         'Sunday',
@@ -34,7 +37,8 @@ class Weekday implements \JsonSerializable {
      * Weekday constructor.
      * @param int $d
      */
-    public function __construct(int $d = 0) {
+    public function __construct(int $d = 0)
+    {
         if (isset(self::$weekdays[$d])) {
             $this->d = $d;
         }
@@ -43,7 +47,8 @@ class Weekday implements \JsonSerializable {
     /**
      * @return int
      */
-    public function Ord(): int {
+    public function Ord(): int
+    {
         return $this->d;
     }
 
@@ -51,25 +56,29 @@ class Weekday implements \JsonSerializable {
      * @param int $d
      * @return bool
      */
-    public function Is(int $d): bool {
+    public function Is(int $d): bool
+    {
         return $this->d === $d;
     }
 
-    public function Short(): string {
+    public function Short(): string
+    {
         return self::$short[$this->d] ?? 'UNK';
     }
 
     /**
      * @return string
      */
-    public function __toString(): string {
+    public function __toString(): string
+    {
         return self::$weekdays[$this->d] ?? 'UNKNOWN';
     }
 
     /**
      * @return string
      */
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         return (string)$this;
     }
 }

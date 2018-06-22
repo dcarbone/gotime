@@ -1,4 +1,6 @@
-<?php namespace DCarbone\GoTimeTests;
+<?php
+
+namespace DCarbone\GoTimeTests;
 
 use DCarbone\Go\Time;
 use PHPUnit\Framework\TestCase;
@@ -7,10 +9,12 @@ use PHPUnit\Framework\TestCase;
  * Class Time\DurationTest
  * @package DCarbone\GOTimeTests
  */
-class DurationTest extends TestCase {
+class DurationTest extends TestCase
+{
     const ZeroThreshold = 1.0e-6;
 
-    public function testCanConstructEmpty() {
+    public function testCanConstructEmpty()
+    {
         $d = new Time\Duration();
         $this->assertInstanceOf(Time\Duration::class, $d);
     }
@@ -18,7 +22,8 @@ class DurationTest extends TestCase {
     /**
      * @depends testCanConstructEmpty
      */
-    public function testCanConstructWithValue() {
+    public function testCanConstructWithValue()
+    {
         $n = time() * Time::Second;
         $d = new Time\Duration($n);
         $this->assertInstanceOf(Time\Duration::class, $d);
@@ -32,7 +37,8 @@ class DurationTest extends TestCase {
     /**
      * @depends testCanConstructWithValue
      */
-    public function testTruncate() {
+    public function testTruncate()
+    {
         $d = new Time\Duration(Time::Second);
         $td = $d->Truncate(new Time\Duration(500 * Time::Millisecond));
         $this->assertNotSame($d, $td);
@@ -46,7 +52,8 @@ class DurationTest extends TestCase {
     /**
      * @depends testCanConstructWithValue
      */
-    public function testRound() {
+    public function testRound()
+    {
         $d = new Time\Duration(Time::Second);
         $td = $d->Round(new Time\Duration(500 * Time::Millisecond));
         $this->assertNotSame($d, $td);
@@ -58,7 +65,8 @@ class DurationTest extends TestCase {
     /**
      * @depends testCanConstructWithValue
      */
-    public function testParseDuration() {
+    public function testParseDuration()
+    {
         $d = Time::ParseDuration('1ns');
         $this->assertInstanceOf(Time\Duration::class, $d);
         $this->assertEquals(1, $d->Nanoseconds());
@@ -140,17 +148,31 @@ class DurationTest extends TestCase {
     }
 
     /**
+     * @param float $expected
+     * @param float $actual
+     * @return void
+     */
+    private function assertEqualFloats(float $expected, float $actual)
+    {
+        $this->assertLessThanOrEqual(self::ZeroThreshold,
+            abs($expected - $actual),
+            sprintf('equal assertion fail, %.6f != %.6f', $expected, $actual));
+    }
+
+    /**
      * @depends testParseDuration
      * @expectedException \InvalidArgumentException
      */
-    public function testExceptionThrownWithInvalidDuration() {
+    public function testExceptionThrownWithInvalidDuration()
+    {
         Time::ParseDuration('922337203685477581ns');
     }
 
     /**
      * @depends testParseDuration
      */
-    public function testStringer() {
+    public function testStringer()
+    {
         $this->assertEquals('500ms', (string)new Time\Duration(500 * Time::Millisecond));
         $this->assertEquals('500µs', (string)new Time\Duration(500 * Time::Microsecond));
         $this->assertEquals('500ns', (string)new Time\Duration(500 * Time::Nanosecond));
@@ -182,13 +204,15 @@ class DurationTest extends TestCase {
     /**
      * @depends testParseDuration
      */
-    public function testCompare() {
+    public function testCompare()
+    {
         $d1 = Time::ParseDuration('5s');
         $this->assertEquals(1, $d1->Compare(Time::ParseDuration('1s')));
         $this->assertEquals(0, $d1->Compare(Time::ParseDuration('5s')));
     }
 
-    public function testIntervalSpec() {
+    public function testIntervalSpec()
+    {
         $d = new Time\Duration();
         $spec = $d->IntervalSpec();
         $this->assertInstanceOf(Time\IntervalSpec::class, $spec);
@@ -211,7 +235,8 @@ class DurationTest extends TestCase {
         $this->assertTrue($spec->invert);
     }
 
-    public function testDateInterval() {
+    public function testDateInterval()
+    {
         $d = new Time\Duration();
         $di = $d->DateInterval();
         $this->assertInstanceOf(\DateInterval::class, $di);
@@ -244,16 +269,5 @@ class DurationTest extends TestCase {
         $this->assertInstanceOf(\DateInterval::class, $di);
         $this->assertEquals(0.00005, $di->f);
         $this->assertEquals(1, $di->invert);
-    }
-
-    /**
-     * @param float $expected
-     * @param float $actual
-     * @return void
-     */
-    private function assertEqualFloats(float $expected, float $actual) {
-        $this->assertLessThanOrEqual(self::ZeroThreshold,
-            abs($expected - $actual),
-            sprintf('equal assertion fail, %.6f != %.6f', $expected, $actual));
     }
 }
