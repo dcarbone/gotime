@@ -46,10 +46,7 @@ class Time
     public static function Now(): Time\Time
     {
         $mt = microtime();
-        if (GOTIME_GTE71) {
-            return Time\Time::createFromFormat('0.u00 U', $mt);
-        }
-        return Time\Time::createFromFormat('U.u', substr($mt, strpos($mt, ' ') + 1) . '.' . substr($mt, 2, 6));
+        return Time\Time::createFromFormat('0.u00 U', $mt);
     }
 
     /**

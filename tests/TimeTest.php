@@ -112,12 +112,10 @@ class TimeTest extends TestCase
         $this->assertFalse($t1->Before($t2), 'Expected ' . $t2 . ' to be before ' . $t1);
         $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
 
-        if (GOTIME_GTE71) {
-            $t2 = Time::Now();
-            $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Microsecond));
-            $this->assertTrue($t1->Before($t2), 'Expected ' . $t1 . ' to be before ' . $t2);
-            $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
-        }
+        $t2 = Time::Now();
+        $t3 = $t2->AddDuration(new Time\Duration(5 * Time::Microsecond));
+        $this->assertTrue($t1->Before($t2), 'Expected ' . $t1 . ' to be before ' . $t2);
+        $this->assertSame($t2, $t3, 'Expected $t3 === $t2');
     }
 
     public function testBeforeDateTime()
@@ -132,15 +130,13 @@ class TimeTest extends TestCase
         );
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
 
-        if (GOTIME_GTE71) {
-            $dt = new \DateTime();
-            $dt2 = $dt->add(new Time\DateInterval('PT0S', true, 0.5));
-            $this->assertFalse(
-                $t->BeforeDateTime($dt),
-                'Expected ' . $dt->format(Time\Time::DefaultFormat) . ' to be before ' . $t
-            );
-            $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
-        }
+        $dt = new \DateTime();
+        $dt2 = $dt->add(new Time\DateInterval('PT0S', true, 0.5));
+        $this->assertFalse(
+            $t->BeforeDateTime($dt),
+            'Expected ' . $dt->format(Time\Time::DefaultFormat) . ' to be before ' . $t
+        );
+        $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 
     public function testAfter()

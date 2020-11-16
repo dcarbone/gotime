@@ -1,5 +1,5 @@
 # gotime
-Golang-like time class(es) for PHP 7.0+
+Golang-like time class(es) for PHP 7.2+
 
 [![Build Status](https://travis-ci.org/dcarbone/gotime.svg?branch=master)](https://travis-ci.org/dcarbone/gotime)
 
@@ -7,15 +7,6 @@ Golang-like time class(es) for PHP 7.0+
 
 The goal of this lib is to achieve near-enough (as determined by me) api equivalency in PHP to the GoLang Time package,
 as basically it is just better than PHP's.
-
-## Limitations 
-
-### Sub-Second Time Calculation
-
-While PHP 7.0+ support creating a \DateTime object with sub-second precision down to microseconds, only PHP 7.1+ support
-incrementing / decrementing microseconds via the `\DateTime::add` and `\DateTime::sub` methods.  If you use
-this library with 7.0, you will NOT be able to manipulate the sub-second values of the [Time\Time](./src/Time/Time.php)
-class after construction!
 
 ## Classes
 
