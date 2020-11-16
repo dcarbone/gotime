@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DCarbone\GoTimeTests;
 
@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DurationTest extends TestCase
 {
-    const ZeroThreshold = 1.0e-6;
+    public const ZeroThreshold = 1.0e-6;
 
     public function testCanConstructEmpty()
     {
@@ -132,7 +132,8 @@ class DurationTest extends TestCase
             4 * Time::Millisecond +
             5 * Time::Microsecond +
             6 * Time::Nanosecond,
-            $d->Nanoseconds());
+            $d->Nanoseconds()
+        );
 
         $d = Time::ParseDuration('1s500ms');
         $this->assertInstanceOf(Time\Duration::class, $d);
@@ -154,17 +155,19 @@ class DurationTest extends TestCase
      */
     private function assertEqualFloats(float $expected, float $actual)
     {
-        $this->assertLessThanOrEqual(self::ZeroThreshold,
+        $this->assertLessThanOrEqual(
+            self::ZeroThreshold,
             abs($expected - $actual),
-            sprintf('equal assertion fail, %.6f != %.6f', $expected, $actual));
+            sprintf('equal assertion fail, %.6f != %.6f', $expected, $actual)
+        );
     }
 
     /**
      * @depends testParseDuration
-     * @expectedException \InvalidArgumentException
      */
     public function testExceptionThrownWithInvalidDuration()
     {
+        $this->expectException(\InvalidArgumentException::class);
         Time::ParseDuration('922337203685477581ns');
     }
 
@@ -181,7 +184,7 @@ class DurationTest extends TestCase
         $d = new Time\Duration($now * Time::Second);
         preg_match('/^(\d+)h(\d+)m(\d+)s$/', (string)$d, $matches);
         $this->assertEquals((int)$d->Hours(), (int)$matches[1]);
-        $t = \DateTime::createFromFormat('U', $now, new \DateTimeZone('UTC'));
+        $t = \DateTime::createFromFormat('U', (string)$now, new \DateTimeZone('UTC'));
         $this->assertEquals(
             (int)$t->format('i'),
             (int)$matches[2],

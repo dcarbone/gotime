@@ -69,7 +69,7 @@ class Time
     public static function ParseDuration(string $s): Time\Duration
     {
         if (0 === strlen($s)) {
-            throw self::invalidDurationException($s);
+            throw self::_invalidDurationException($s);
         }
 
         $d = 0;
@@ -84,14 +84,14 @@ class Time
         if ('0' === $s) {
             return new Time\Duration();
         } elseif ('' === $s) {
-            throw self::invalidDurationException($orig);
+            throw self::_invalidDurationException($orig);
         }
 
         while ('' !== $s) {
             $ord = ord($s[0]);
             // at this point in the loop only [0-9.] are expected
             if (46 !== $ord && (48 > $ord || $ord > 57)) {
-                throw self::invalidDurationException($orig);
+                throw self::_invalidDurationException($orig);
             }
             $v = 0;
             $pl = strlen($s);
@@ -101,11 +101,11 @@ class Time
                     break;
                 }
                 if (GOTIME_OVERFLOW_INT < $v) {
-                    throw self::invalidDurationException($orig);
+                    throw self::_invalidDurationException($orig);
                 }
                 $v = $v * 10 + (int)$s[$i];
                 if (GOTIME_OVERFLOW_INT < $v) {
-                    throw self::invalidDurationException($orig);
+                    throw self::_invalidDurationException($orig);
                 }
             }
             $s = substr($s, $i);
@@ -143,7 +143,7 @@ class Time
             }
 
             if (!$pre && !$post) {
-                throw self::invalidDurationException($orig);
+                throw self::_invalidDurationException($orig);
             }
 
             $pl = strlen($s);
@@ -156,22 +156,22 @@ class Time
             $u = substr($s, 0, $i);
             $unit = self::$unitMap[$u] ?? null;
             if (null === $unit) {
-                throw self::invalidDurationUnitException($u, $orig);
+                throw self::_invalidDurationUnitException($u, $orig);
             }
             if (intdiv(PHP_INT_MAX, $unit) < $v) {
-                throw self::invalidDurationException($orig);
+                throw self::_invalidDurationException($orig);
             }
             $v *= $unit;
             if (0 < $f) {
                 $v += (int)($f * ($unit / $scale));
                 if (0 > $v) {
-                    throw self::invalidDurationException($orig);
+                    throw self::_invalidDurationException($orig);
                 }
             }
 
             $d += $v;
             if (0 > $d) {
-                throw self::invalidDurationException($orig);
+                throw self::_invalidDurationException($orig);
             }
             $s = substr($s, $i);
         }
@@ -180,10 +180,33 @@ class Time
     }
 
     /**
+     * Attempts to "cast" the provided input into a Time\Duration type
+     *
+     * @param string|int|float|\DCarbone\Go\Time\Duration $input
+     * @return \DCarbone\Go\Time\Duration
+     */
+    public static function Duration($input): Time\Duration
+    {
+        switch (gettype($input)) {
+            case 'string':
+                return static::ParseDuration($input);
+            case 'integer':
+                return new Time\Duration($input);
+            case 'double':
+                return new Time\Duration(intval($input, 10));
+            case 'object':
+                if ($input instanceof Time\Duration) {
+                    return clone $input;
+                }
+        }
+        throw new \UnexpectedValueException(sprintf('Cannot handle object of type "%s"', get_class($input)));
+    }
+
+    /**
      * @param string $orig
      * @return \InvalidArgumentException
      */
-    private static function invalidDurationException(string $orig): \InvalidArgumentException
+    private static function _invalidDurationException(string $orig): \InvalidArgumentException
     {
         return new \InvalidArgumentException("Invalid duration: {$orig}");
     }
@@ -193,7 +216,7 @@ class Time
      * @param string $orig
      * @return \InvalidArgumentException
      */
-    private static function invalidDurationUnitException(string $unit, string $orig): \InvalidArgumentException
+    private static function _invalidDurationUnitException(string $unit, string $orig): \InvalidArgumentException
     {
         return new \InvalidArgumentException("Unknown unit {$unit} in duration {$orig}");
     }

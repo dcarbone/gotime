@@ -2,7 +2,7 @@
   "name": "dcarbone/gotime",
   "type": "library",
   "license": "MIT",
-  "description": "Golang-like time class(es) for PHP 7.0+",
+  "description": "Golang-like time class(es) for PHP 7.2+",
   "homepage": "https://github.com/dcarbone/gotime",
   "authors": [
     {
@@ -15,7 +15,8 @@
     }
   ],
   "require": {
-    "php": ">=7.0"
+    "php": ">=7.2",
+    "ext-json": "*"
   },
   "autoload": {
     "files": [
@@ -34,7 +35,7 @@
     ],
     "psr-4": {
       "DCarbone\\Go\\": "src/",
-      "DCarbone\\GoTests\\": "tests/"
+      "DCarbone\\GoTimeTests\\": "tests/"
     }
   }
 }
