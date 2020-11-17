@@ -12,23 +12,26 @@ use DCarbone\Go\Time as TimeNS;
  */
 class Time extends \DateTime
 {
+    public const DefaultFormat             = 'Y-m-d H:i:s.u000 O e';
+    public const DefaultFormatNoSubSeconds = 'Y-m-d H:i:s O e';
 
-    const DefaultFormat             = 'Y-m-d H:i:s.u000 O e';
-    const DefaultFormatNoSubSeconds = 'Y-m-d H:i:s O e';
+    private const FromDateTimeFormat = 'Y-m-d H:i:s.u O';
 
     /** @var array */
     protected static $lastErrors = [];
 
     /**
-     * @param string             $format
-     * @param string             $time
+     * @param string $format
+     * @param string $time
      * @param \DateTimeZone|null $timezone
-     * @return \DCarbone\Go\Time\Time|false
+     * @return \DateTime|false|static
+     * @throws \Exception
      */
-    public static function createFromFormat($format, $time, $timezone = null)
+    public static function createFromFormat($format, $time, \DateTimeZone $timezone = null)
     {
         if ($dt = parent::createFromFormat($format, $time, $timezone)) {
-            return new static($dt->format('Y-m-d H:i:s.u O'));
+            // todo: find more efficient implementation
+            return new static($dt->format(self::FromDateTimeFormat), $timezone);
         }
         return false;
     }
@@ -43,10 +46,10 @@ class Time extends \DateTime
             return '';
         }
         $errstr = '';
-        if ($errs['warning_count'] ?? 0 > 0) {
+        if (($errs['warning_count'] ?? 0) > 0) {
             $errstr = sprintf('Warnings: ["%s"]', implode('", "', $errs['warnings'] ?? []));
         }
-        if ($errs['error_count'] ?? 0 > 0) {
+        if (($errs['error_count'] ?? 0) > 0) {
             if ($errstr !== '') {
                 $errstr .= '; ';
             }

@@ -13,6 +13,8 @@
     <testsuites>
         <testsuite name="duration">
             <file>./tests/DurationTest.php</file>
+        </testsuite>
+        <testsuite name="time">
             <file>./tests/TimeTest.php</file>
         </testsuite>
     </testsuites>

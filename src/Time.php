@@ -6,17 +6,17 @@ namespace DCarbone\Go;
  * Class Time
  * @package DCarbone\Go
  */
-class Time
+abstract class Time
 {
-    const Nanosecond  = 1;
-    const Microsecond = 1000 * self::Nanosecond;
-    const Millisecond = 1000 * self::Microsecond;
-    const Second      = 1000 * self::Millisecond;
-    const Minute      = 60 * self::Second;
-    const Hour        = 60 * self::Minute;
+    public const Nanosecond  = 1;
+    public const Microsecond = 1000 * self::Nanosecond;
+    public const Millisecond = 1000 * self::Microsecond;
+    public const Second      = 1000 * self::Millisecond;
+    public const Minute      = 60 * self::Second;
+    public const Hour        = 60 * self::Minute;
 
     /** @var array */
-    private static $unitMap = [
+    private const UnitMap = [
         'ns' => self::Nanosecond,
         'us' => self::Microsecond,
         'µs' => self::Microsecond,
@@ -151,7 +151,7 @@ class Time
                 }
             }
             $u = substr($s, 0, $i);
-            $unit = self::$unitMap[$u] ?? null;
+            $unit = self::UnitMap[$u] ?? null;
             if (null === $unit) {
                 throw self::_invalidDurationUnitException($u, $orig);
             }
@@ -184,6 +184,9 @@ class Time
      */
     public static function Duration($input): Time\Duration
     {
+        if (null === $input) {
+            return new Time\Duration(0);
+        }
         switch (gettype($input)) {
             case 'string':
                 return static::ParseDuration($input);
@@ -195,8 +198,11 @@ class Time
                 if ($input instanceof Time\Duration) {
                     return clone $input;
                 }
+                throw new \UnexpectedValueException(sprintf('Cannot handle object of type "%s"', get_class($input)));
         }
-        throw new \UnexpectedValueException(sprintf('Cannot handle object of type "%s"', get_class($input)));
+        throw new \UnexpectedValueException(
+            sprintf('Cannot cast input of type "%s" to "%s"', gettype($input), Time\Duration::class)
+        );
     }
 
     /**

@@ -135,19 +135,19 @@ class Duration implements \JsonSerializable
         $u = intdiv($u, Time::Microsecond);
 
         $buff = '';
-        $u = self::fmtFrac($buff, $u, 6);
+        $u = self::_fmtFrac($buff, $u, 6);
         $spec->f = (float)$buff;
 
         $buff = 'S';
-        self::fmtInt($buff, $u % 60);
+        self::_fmtInt($buff, $u % 60);
         $u = intdiv($u, 60);
         if ($u > 0) {
             $buff = "M{$buff}";
-            self::fmtInt($buff, $u % 60);
+            self::_fmtInt($buff, $u % 60);
             $u = intdiv($u, 60);
             if ($u > 0) {
                 $buff = "H{$buff}";
-                self::fmtInt($buff, $u);
+                self::_fmtInt($buff, $u);
             }
         }
 
@@ -163,7 +163,7 @@ class Duration implements \JsonSerializable
      * @param int    $prec
      * @return int
      */
-    private static function fmtFrac(string &$buff, int $v, int $prec): int
+    private static function _fmtFrac(string &$buff, int $v, int $prec): int
     {
         $print = false;
         for ($i = 0; $i < $prec; $i++) {
@@ -185,7 +185,7 @@ class Duration implements \JsonSerializable
      * @param int    $v
      * @return void
      */
-    private static function fmtInt(string &$buff, int $v)
+    private static function _fmtInt(string &$buff, int $v)
     {
         if (0 === $v) {
             $buff = "0{$buff}";
@@ -230,25 +230,25 @@ class Duration implements \JsonSerializable
                 $prec = 6;
                 $buff = 'ms';
             }
-            $u = self::fmtFrac($buff, $u, $prec);
-            self::fmtInt($buff, $u);
+            $u = self::_fmtFrac($buff, $u, $prec);
+            self::_fmtInt($buff, $u);
         } else {
             $buff = 's';
-            $u = self::fmtFrac($buff, $u, 9);
+            $u = self::_fmtFrac($buff, $u, 9);
 
-            self::fmtInt($buff, $u % 60);
+            self::_fmtInt($buff, $u % 60);
 
             $u = intdiv($u, 60);
 
             if ($u > 0) {
                 $buff = "m{$buff}";
 
-                self::fmtInt($buff, $u % 60);
+                self::_fmtInt($buff, $u % 60);
                 $u = intdiv($u, 60);
 
                 if ($u > 0) {
                     $buff = "h{$buff}";
-                    self::fmtInt($buff, $u);
+                    self::_fmtInt($buff, $u);
                 }
             }
         }

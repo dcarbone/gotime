@@ -187,4 +187,62 @@ class TimeTest extends TestCase
         );
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
+
+    public function testDurationCast()
+    {
+        $tests = [
+            [
+                'name'              => 'string',
+                'value'             => '24h',
+                'expected'          => 24 * Time::Hour,
+                'expectedException' => '',
+            ],
+            [
+                'name'              => 'integer',
+                'value'             => 24 * Time::Hour,
+                'expected'          => 24 * Time::Hour,
+                'expectedException' => '',
+            ],
+            [
+                'name'              => 'float',
+                'value'             => 24.0 * Time::Hour,
+                'expected'          => 24 * Time::Hour,
+                'expectedException' => '',
+            ],
+            [
+                'name'              => 'inst',
+                'value'             => new Time\Duration(24 * Time::Hour),
+                'expected'          => 24 * Time::Hour,
+                'expectedException' => '',
+            ],
+            [
+                'name'              => 'null',
+                'value'             => null,
+                'expected'          => 0,
+                'expectedException' => '',
+            ],
+            [
+                'name'              => 'bool',
+                'value'             => true,
+                'expected'          => 0,
+                'expectedException' => \UnexpectedValueException::class,
+            ]
+        ];
+        foreach ($tests as $test) {
+            $this->expectException($test['expectedException']);
+            $dur = Time::Duration($test['value']);
+            if ('' === $test['expectedException']) {
+                $this->assertIsObject(
+                    $dur,
+                    sprintf(
+                        'Test "%s" failed: %s is not %s',
+                        $test['name'],
+                        gettype($dur),
+                        Time\Duration::class
+                    )
+                );
+                $this->assertEquals($test['expected'], $dur->Nanoseconds());
+            }
+        }
+    }
 }
