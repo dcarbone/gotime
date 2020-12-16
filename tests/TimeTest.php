@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DCarbone\GoTimeTests;
 
@@ -11,17 +11,11 @@ use PHPUnit\Framework\TestCase;
  */
 class TimeTest extends TestCase
 {
-
-    public function testNew()
+    public function testZero()
     {
         $time = Time::New();
         $this->assertInstanceOf(Time\Time::class, $time);
         $this->assertTrue($time->IsZero());
-    }
-
-    public function testParts()
-    {
-        $time = Time::New();
         $this->assertEquals(1970, $time->Year());
         $this->assertIsInt($time->Nanosecond());
         $this->assertEquals(0, $time->Nanosecond(), 'Nanosecond mismatch');
@@ -47,7 +41,9 @@ class TimeTest extends TestCase
 
     public function testNow()
     {
-        list($s, $ns) = self::getNowParts();
+        // todo: this test needs to be rethought...
+
+        [$s, $ns] = self::getNowParts();
 
         // close enough...
         $time = Time::Now();
@@ -73,22 +69,22 @@ class TimeTest extends TestCase
         }
     }
 
-    // TODO: This one will probably cause erroneous failures...
 
     /**
+     * TODO: This one will probably cause erroneous failures...
      * @return array
      */
     private static function getNowParts(): array
     {
         $mt = microtime();
         if (false !== strpos($mt, ' ')) {
-            list($ns, $s) = explode(' ', $mt);
+            [$ns, $s] = explode(' ', $mt);
         } else {
             $ns = '0.0';
             $s = $mt;
         }
         $s = (int)$s;
-        $ns = (int)rtrim(substr($ns, 2), '0') * Time::Microsecond + $s * Time::Second;
+        $ns = intval(floatval($ns) * Time::Second);
 
         return [$s, $ns];
     }
@@ -188,61 +184,146 @@ class TimeTest extends TestCase
         $this->assertSame($dt, $dt2, 'Expected $dt2 === $dt');
     }
 
-    public function testDurationCast()
+    public function testEqualTimePositive()
     {
-        $tests = [
-            [
-                'name'              => 'string',
-                'value'             => '24h',
-                'expected'          => 24 * Time::Hour,
-                'expectedException' => '',
-            ],
-            [
-                'name'              => 'integer',
-                'value'             => 24 * Time::Hour,
-                'expected'          => 24 * Time::Hour,
-                'expectedException' => '',
-            ],
-            [
-                'name'              => 'float',
-                'value'             => 24.0 * Time::Hour,
-                'expected'          => 24 * Time::Hour,
-                'expectedException' => '',
-            ],
-            [
-                'name'              => 'inst',
-                'value'             => new Time\Duration(24 * Time::Hour),
-                'expected'          => 24 * Time::Hour,
-                'expectedException' => '',
-            ],
-            [
-                'name'              => 'null',
-                'value'             => null,
-                'expected'          => 0,
-                'expectedException' => '',
-            ],
-            [
-                'name'              => 'bool',
-                'value'             => true,
-                'expected'          => 0,
-                'expectedException' => \UnexpectedValueException::class,
-            ]
-        ];
-        foreach ($tests as $test) {
-            $this->expectException($test['expectedException']);
-            $dur = Time::Duration($test['value']);
-            if ('' === $test['expectedException']) {
-                $this->assertIsObject(
-                    $dur,
-                    sprintf(
-                        'Test "%s" failed: %s is not %s',
-                        $test['name'],
-                        gettype($dur),
-                        Time\Duration::class
-                    )
-                );
-                $this->assertEquals($test['expected'], $dur->Nanoseconds());
-            }
-        }
+        $a = Time::New();
+        $b = Time::New();
+        $a->setTime(0, 0, 1, 500);
+        $b->setTime(0, 0, 1, 500);
+
+        $this->assertTrue($a->Equal($b));
+
+        $a = Time::New();
+        $b = time::New();
+        $a->setDate(1, 2, 3);
+        $b->setDate(1, 2, 3);
+
+        $this->assertTrue($a->Equal($b));
+    }
+
+    public function testEqualTimeNegative()
+    {
+        $a = Time::New();
+        $b = Time::New();
+        $a->setTime(0, 0, 5, 1234123);
+        $b->setTime(0, 0, 5, 1234124);
+
+        $this->assertFalse($a->Equal($b));
+
+        $a = Time::New();
+        $b = time::New();
+        $a->setDate(1, 2, 3);
+        $b->setDate(1, 2, 3);
+        $b->setTime(2, 0, 0);
+
+        $this->assertFalse($a->Equal($b));
+    }
+
+    public function testEqualDateTimePositive()
+    {
+        $a = Time::New();
+        $b = new \DateTime('@0');
+
+        $this->assertTrue($a->EqualDateTime($b));
+    }
+
+    public function testEqualDateTimeNegative()
+    {
+        $a = Time::Now();
+        $b = new \DateTime('@0');
+
+        $this->assertFalse($a->EqualDateTime($b));
+    }
+
+    public function testSinceTime()
+    {
+        $a = (Time::Now())->AddDuration(new Time\Duration(-24 * time::Hour));
+        $dur = Time::Since($a);
+        $this->assertEqualsWithDelta(24, $dur->Hours(), 1);
+    }
+
+    public function testSinceDateTime()
+    {
+        $now = new \DateTime();
+        $a = (clone $now)->sub(new \DateInterval('PT24H'));
+        $dur = Time::SinceDateTime($a);
+        $this->assertEqualsWithDelta(Time::Duration($a->diff($now))->Hours(), $dur->Hours(), 1);
+
+        $a = (new \DateTime())->add(new \DateInterval('PT24H'));
+        $dur = Time::SinceDateTime($a);
+        $this->assertEqualsWithDelta(-24, $dur->Hours(), 1);
+    }
+
+    public function testUntilTime()
+    {
+        $a = (Time::Now())->AddDuration(new Time\Duration(24 * time::Hour));
+        $dur = Time::Until($a);
+        $this->assertEqualsWithDelta(24, $dur->Hours(), 1);
+    }
+
+    public function testUntilDateTime() {
+        $now = new \DateTime();
+        $a = (clone $now)->add(new \DateInterval('PT24H'));
+        $dur = Time::UntilDateTime($a);
+        $this->assertEqualsWithDelta(Time::Duration($now->diff($a))->Hours(), $dur->Hours(), 1);
+    }
+
+    public function testDurationCastString()
+    {
+        $dur = Time::Duration('24h');
+        $this->assertIsObject($dur);
+        $this->assertEquals(24 * Time::Hour, $dur->Nanoseconds());
+    }
+
+    public function testDurationCastInteger()
+    {
+        $dur = Time::Duration(24 * Time::Hour);
+        $this->assertIsObject($dur);
+        $this->assertEquals(24 * time::Hour, $dur->Nanoseconds());
+    }
+
+    public function testDurationCastFloat()
+    {
+        $dur = Time::Duration(24.0 * time::Hour);
+        $this->assertIsObject($dur);
+        $this->assertEquals(24 * time::Hour, $dur->Nanoseconds());
+    }
+
+    public function testDurationCastInst()
+    {
+        $dur = Time::Duration(new Time\Duration(24 * time::Hour));
+        $this->assertIsObject($dur);
+        $this->assertEquals(24 * time::Hour, $dur->Nanoseconds());
+    }
+
+    public function testDurationCastNull()
+    {
+        $dur = Time::Duration(null);
+        $this->assertIsObject($dur);
+        $this->assertEquals(0, $dur->Nanoseconds());
+    }
+
+    public function testDurationCastBool()
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        Time::Duration(true);
+    }
+
+    public function testDurationCastDateInterval()
+    {
+        $di = new \DateInterval('PT10S');
+        $dur = Time::Duration($di);
+        $this->assertIsObject($dur);
+        $this->assertEquals(10 * Time::Second, $dur->Nanoseconds());
+
+        $a = Time::New();
+        $a->setTime(0, 0, 0, 1000);
+        $b = Time::New();
+        $b->setTime(0, 0, 0, 2000);
+        $di = $a->diff($b);
+
+        $dur = time::Duration($di);
+        $this->assertIsObject($dur);
+        $this->assertEquals(Time::Millisecond, $dur->Nanoseconds());
     }
 }

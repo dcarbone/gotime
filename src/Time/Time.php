@@ -17,14 +17,11 @@ class Time extends \DateTime
 
     private const FromDateTimeFormat = 'Y-m-d H:i:s.u O';
 
-    /** @var array */
-    protected static $lastErrors = [];
-
     /**
      * @param string $format
      * @param string $time
      * @param \DateTimeZone|null $timezone
-     * @return \DateTime|false|static
+     * @return false|static
      * @throws \Exception
      */
     public static function createFromFormat($format, $time, \DateTimeZone $timezone = null)
@@ -127,7 +124,7 @@ class Time extends \DateTime
      */
     public function UnixNano(): int
     {
-        return ($this->Unix() * TimeNS::Second) + $this->Nanosecond();
+        return intval($this->Unix() * TimeNS::Second) + $this->Nanosecond();
     }
 
     /**
@@ -166,10 +163,10 @@ class Time extends \DateTime
     }
 
     /**
-     * @param \DateTime $dt
+     * @param \DateTimeInterface $dt
      * @return bool
      */
-    public function BeforeDateTime(\DateTime $dt): bool
+    public function BeforeDateTime(\DateTimeInterface $dt): bool
     {
         return $this->UnixNano() <
             ((int)$dt->format('U') * TimeNS::Second +
@@ -186,14 +183,34 @@ class Time extends \DateTime
     }
 
     /**
-     * @param \DateTime $dt
+     * @param \DateTimeInterface $dt
      * @return bool
      */
-    public function AfterDateTime(\DateTime $dt): bool
+    public function AfterDateTime(\DateTimeInterface $dt): bool
     {
-        return $this->UnixNano() >
-            ((int)$dt->format('U') * TimeNS::Second +
-                (int)$dt->format('u') * TimeNS::Microsecond);
+        return $this->UnixNano() > intval(
+                ((int)$dt->format('U') * TimeNS::Second + (int)$dt->format('u') * TimeNS::Microsecond)
+            );
+    }
+
+    /**
+     * @param \DCarbone\Go\Time\Time $t
+     * @return bool
+     */
+    public function Equal(Time $t): bool
+    {
+        return $this->UnixNano() === $t->UnixNano();
+    }
+
+    /**
+     * @param \DateTimeInterface $dt
+     * @return bool
+     */
+    public function EqualDateTime(\DateTimeInterface $dt): bool
+    {
+        return $this->UnixNano() === intval(
+                ((int)$dt->format('U') * TimeNS::Second + (int)$dt->format('u') * TimeNS::Nanosecond)
+            );
     }
 
     /**

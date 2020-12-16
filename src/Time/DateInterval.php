@@ -8,18 +8,17 @@ namespace DCarbone\Go\Time;
  */
 class DateInterval extends \DateInterval
 {
-
     /**
      * DateInterval constructor.
      * @param string $interval_spec
-     * @param bool   $invert
-     * @param float  $microseconds
+     * @param bool $invert
+     * @param float $microseconds
      * @throws \Exception
      */
     public function __construct(string $interval_spec, bool $invert = false, float $microseconds = 0.0)
     {
         parent::__construct($interval_spec);
-        $this->invert = $invert;
+        $this->invert = $invert ? 1 : 0;
         $this->f = $microseconds;
     }
 
