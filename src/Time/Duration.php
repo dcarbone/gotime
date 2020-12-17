@@ -33,6 +33,22 @@ class Duration implements \JsonSerializable
     /**
      * @return float
      */
+    public function Microseconds(): float
+    {
+        return $this->ns / Time::Microsecond;
+    }
+
+    /**
+     * @return float
+     */
+    public function Milliseconds(): float
+    {
+        return $this->ns / Time::Millisecond;
+    }
+
+    /**
+     * @return float
+     */
     public function Seconds(): float
     {
         return $this->ns / Time::Second;
