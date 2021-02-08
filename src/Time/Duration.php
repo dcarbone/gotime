@@ -11,7 +11,7 @@ use DCarbone\Go\Time;
 class Duration implements \JsonSerializable
 {
     /** @var int */
-    private $ns = 0;
+    private $ns;
 
     /**
      * TimeDuration constructor.
@@ -216,7 +216,7 @@ class Duration implements \JsonSerializable
     /**
      * @return int
      */
-    public function jsonSerialize(): int
+    public function jsonSerialize()
     {
         return $this->ns;
     }
