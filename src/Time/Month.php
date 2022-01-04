@@ -9,7 +9,7 @@ namespace DCarbone\Go\Time;
 class Month implements \JsonSerializable
 {
     /** @var array */
-    private static $months = [
+    private const MONTHS = [
         1  => 'January',
         2  => 'February',
         3  => 'March',
@@ -25,7 +25,7 @@ class Month implements \JsonSerializable
     ];
 
     /** @var array */
-    private static $short = [
+    private const SHORT = [
         1  => 'Jan',
         2  => 'Feb',
         3  => 'Mar',
@@ -49,7 +49,7 @@ class Month implements \JsonSerializable
      */
     public function __construct(int $m = 1)
     {
-        if (isset(self::$months[$m])) {
+        if (isset(self::MONTHS[$m])) {
             $this->m = $m;
         }
     }
@@ -76,7 +76,7 @@ class Month implements \JsonSerializable
      */
     public function Short(): string
     {
-        return self::$short[$this->m] ?? 'UNK';
+        return self::SHORT[$this->m] ?? 'UNK';
     }
 
     /**
@@ -84,7 +84,7 @@ class Month implements \JsonSerializable
      */
     public function __toString(): string
     {
-        return self::$months[$this->m] ?? 'UNKNOWN';
+        return self::MONTHS[$this->m] ?? 'UNKNOWN';
     }
 
     /**

@@ -9,7 +9,7 @@ namespace DCarbone\Go\Time;
 class Weekday implements \JsonSerializable
 {
     /** @var array */
-    private static $weekdays = [
+    private const WEEKDAYS = [
         'Sunday',
         'Monday',
         'Tuesday',
@@ -20,7 +20,7 @@ class Weekday implements \JsonSerializable
     ];
 
     /** @var array */
-    private static $short = [
+    private const SHORT = [
         'Sun',
         'Mon',
         'Tue',
@@ -39,7 +39,7 @@ class Weekday implements \JsonSerializable
      */
     public function __construct(int $d = 0)
     {
-        if (isset(self::$weekdays[$d])) {
+        if (isset(self::WEEKDAYS[$d])) {
             $this->d = $d;
         }
     }
@@ -63,7 +63,7 @@ class Weekday implements \JsonSerializable
 
     public function Short(): string
     {
-        return self::$short[$this->d] ?? 'UNK';
+        return self::SHORT[$this->d] ?? 'UNK';
     }
 
     /**
@@ -71,7 +71,7 @@ class Weekday implements \JsonSerializable
      */
     public function __toString(): string
     {
-        return self::$weekdays[$this->d] ?? 'UNKNOWN';
+        return self::WEEKDAYS[$this->d] ?? 'UNKNOWN';
     }
 
     /**
