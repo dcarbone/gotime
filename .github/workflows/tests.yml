@@ -23,6 +23,6 @@ jobs:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
       - name: Install Composer deps
-        run: composer install --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
       - name: Run tests
         run: ./vendor/bin/phpunit
