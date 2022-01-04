@@ -1,7 +1,7 @@
 # gotime
 Golang-like time class(es) for PHP 7.2+
 
-[![Build Status](https://travis-ci.org/dcarbone/gotime.svg?branch=master)](https://travis-ci.org/dcarbone/gotime)
+[![Tests](https://github.com/dcarbone/gotime/actions/workflows/tests.yml/badge.svg)](https://github.com/dcarbone/gotime/actions/workflows/tests.yml)
 
 ## Desc
 
