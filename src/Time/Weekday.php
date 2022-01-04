@@ -77,7 +77,7 @@ class Weekday implements \JsonSerializable
     /**
      * @return string
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): string
     {
         return (string)$this;
     }
