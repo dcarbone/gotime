@@ -27,7 +27,7 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "@stable"
+    "phpunit/phpunit": "^9.5"
   },
   "autoload-dev": {
     "files": [

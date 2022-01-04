@@ -273,4 +273,11 @@ class DurationTest extends TestCase
         $this->assertEquals(0.00005, $di->f);
         $this->assertEquals(1, $di->invert);
     }
+
+    public function testJsonSerialization()
+    {
+        $d = new Time\Duration(5);
+        $dj = json_encode($d);
+        $this->assertEquals(5, $dj, 'Json serialize mismatch');
+    }
 }
