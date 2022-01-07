@@ -9,11 +9,11 @@ namespace DCarbone\Go\Time;
 class IntervalSpec
 {
     /** @var string */
-    public $spec = '';
+    public string $spec = '';
     /** @var bool */
-    public $invert = false;
+    public bool $invert = false;
     /** @var float */
-    public $f = 0.0;
+    public float $f = 0.0;
 
     /**
      * IntervalSpec constructor.
