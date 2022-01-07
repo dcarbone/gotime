@@ -15,7 +15,7 @@
     }
   ],
   "require": {
-    "php": ">=7.3",
+    "php": "^7.3 || 8.0.*",
     "ext-json": "*"
   },
   "autoload": {
@@ -27,7 +27,7 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "@stable"
+    "phpunit/phpunit": "^9.5"
   },
   "autoload-dev": {
     "files": [
