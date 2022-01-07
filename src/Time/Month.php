@@ -41,7 +41,7 @@ class Month implements \JsonSerializable
     ];
 
     /** @var int */
-    private $m = 1;
+    private int $m = 1;
 
     /**
      * Month constructor.
@@ -90,7 +90,7 @@ class Month implements \JsonSerializable
     /**
      * @return string
      */
-    public function jsonSerialize(): string
+    public function jsonSerialize(): mixed
     {
         return (string)$this;
     }

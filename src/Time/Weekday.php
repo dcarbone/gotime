@@ -31,7 +31,7 @@ class Weekday implements \JsonSerializable
     ];
 
     /** @var int */
-    private $d = 0;
+    private int $d = 0;
 
     /**
      * Weekday constructor.
@@ -77,7 +77,7 @@ class Weekday implements \JsonSerializable
     /**
      * @return string
      */
-    public function jsonSerialize(): string
+    public function jsonSerialize(): mixed
     {
         return (string)$this;
     }
