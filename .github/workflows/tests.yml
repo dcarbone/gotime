@@ -18,7 +18,7 @@ jobs:
           extensions: json
           ini-values: precision=14,serialize_precision=-1
       - name: Cache Composer deps
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
