@@ -1,5 +1,5 @@
 # gotime
-Golang-like time class(es) for PHP 7.3+
+Golang-like time class(es) for PHP 8.1+
 
 [![Tests](https://github.com/dcarbone/gotime/actions/workflows/tests.yml/badge.svg)](https://github.com/dcarbone/gotime/actions/workflows/tests.yml)
 
