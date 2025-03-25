@@ -4,7 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -16,6 +16,32 @@ jobs:
     name: PHP ${{ matrix.php-version }}
     steps:
       - uses: actions/checkout@v4
+      - name: 'Define vars'
+        id: vars
+        shell: bash -e {0}
+        # language=sh
+        run: |
+          _phpunit_version=
+          case "${{ inputs.php-version }}" in
+            8.1) _phpunit_version='10.5' ;;
+            8.2) _phpunit_version='11.1' ;;
+            8.3) _phpunit_version='11.1' ;;
+            8.4) _phpunit_version='11.1' ;;
+            *) echo "Unsupported PHP version: ${{ inputs.php-version }}" && exit 1 ;;
+          esac
+          echo "phpunit-version=${_phpunit_version}" >> $GITHUB_OUTPUT
+      - name: 'Install jq'
+        uses: dcarbone/install-jq-action@v3
+        with:
+          force: true
+
+      - name: 'Set composer dep versions'
+        shell: bash -e {0}
+        # language=sh
+        run: |
+          tmpf="$(mktemp)"
+          jq -rcM '."require-dev"."phpunit/phpunit" = "^${{ steps.vars.outputs.phpunit-version }}"' composer.json > "${tmpf}"
+          mv "${tmpf}" composer.json
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
