@@ -4,76 +4,45 @@ namespace DCarbone\Go\Time;
 
 use DCarbone\Go\Time;
 
-/**
- * Class Duration
- * @package DCarbone\GOTime
- */
 class Duration implements \JsonSerializable
 {
-    /** @var int */
     private int $ns;
 
-    /**
-     * TimeDuration constructor.
-     * @param int $nanoseconds
-     */
     public function __construct(int $nanoseconds = 0)
     {
         $this->ns = $nanoseconds;
     }
 
-    /**
-     * @return int
-     */
     public function Nanoseconds(): int
     {
         return $this->ns;
     }
 
-    /**
-     * @return float
-     */
     public function Microseconds(): float
     {
         return $this->ns / Time::Microsecond;
     }
 
-    /**
-     * @return float
-     */
     public function Milliseconds(): float
     {
         return $this->ns / Time::Millisecond;
     }
 
-    /**
-     * @return float
-     */
     public function Seconds(): float
     {
         return $this->ns / Time::Second;
     }
 
-    /**
-     * @return float
-     */
     public function Minutes(): float
     {
         return $this->ns / Time::Minute;
     }
 
-    /**
-     * @return float
-     */
     public function Hours(): float
     {
         return $this->ns / Time::Hour;
     }
 
-    /**
-     * @param \DCarbone\Go\Time\Duration $m
-     * @return \DCarbone\Go\Time\Duration
-     */
     public function Truncate(Duration $m): Duration
     {
         if (0 >= $m->ns) {
@@ -82,10 +51,6 @@ class Duration implements \JsonSerializable
         return new Duration($this->ns - $this->ns % $m->ns);
     }
 
-    /**
-     * @param \DCarbone\Go\Time\Duration $m
-     * @return \DCarbone\Go\Time\Duration
-     */
     public function Round(Duration $m): Duration
     {
         if (0 >= $m->ns) {
@@ -115,17 +80,12 @@ class Duration implements \JsonSerializable
         return new Duration(PHP_INT_MAX);
     }
 
-    /**
-     * @param \DCarbone\Go\Time\Duration $other
-     * @return int
-     */
     public function Compare(Duration $other): int
     {
         return $this->ns === $other->ns ? 0 : ($this->ns > $other->ns ? 1 : -1);
     }
 
     /**
-     * @return \DateInterval
      * @throws \Exception
      */
     public function DateInterval(): \DateInterval
@@ -133,9 +93,6 @@ class Duration implements \JsonSerializable
         return DateInterval::fromIntervalSpec($this->IntervalSpec());
     }
 
-    /**
-     * @return \DCarbone\Go\Time\IntervalSpec
-     */
     public function IntervalSpec(): IntervalSpec
     {
         $neg = 0 > $this->ns;
@@ -173,12 +130,6 @@ class Duration implements \JsonSerializable
         return $spec;
     }
 
-    /**
-     * @param string $buff
-     * @param int    $v
-     * @param int    $prec
-     * @return int
-     */
     private static function _fmtFrac(string &$buff, int $v, int $prec): int
     {
         $print = false;
@@ -196,11 +147,6 @@ class Duration implements \JsonSerializable
         return $v;
     }
 
-    /**
-     * @param string $buff
-     * @param int    $v
-     * @return void
-     */
     private static function _fmtInt(string &$buff, int $v)
     {
         if (0 === $v) {
@@ -213,10 +159,7 @@ class Duration implements \JsonSerializable
         }
     }
 
-    /**
-     * @return int
-     */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): int
     {
         return $this->ns;
     }

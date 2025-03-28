@@ -37,18 +37,11 @@ abstract class Time
         // not designed to be constructed
     }
 
-    /**
-     * @return \DCarbone\Go\Time\Time
-     */
     public static function New(): Time\Time
     {
         return new Time\Time('@0');
     }
 
-    /**
-     * @return \DCarbone\Go\Time\Time
-     * @throws \Exception
-     */
     public static function Now(): Time\Time
     {
         $mt = microtime();
@@ -56,8 +49,6 @@ abstract class Time
     }
 
     /**
-     * @param \DCarbone\Go\Time\Time $t
-     * @return \DCarbone\Go\Time\Duration
      * @throws \Exception
      */
     public static function Since(Time\Time $t): Time\Duration
@@ -65,18 +56,13 @@ abstract class Time
         return static::Now()->sub($t->UnixNanoDuration()->DateInterval())->UnixNanoDuration();
     }
 
-    /**
-     * @param \DateTimeInterface $dt
-     * @return \DCarbone\Go\Time\Duration
-     */
     public static function SinceDateTime(\DateTimeInterface $dt): Time\Duration
     {
-        return Time::Duration((clone $dt)->diff(new \DateTime(), false));
+        return Time::Duration((clone $dt)->diff(new \DateTime()));
     }
 
     /**
-     * @param \DCarbone\Go\Time\Time $t
-     * @return \DCarbone\Go\Time\Duration
+     * @throws \DateInvalidOperationException
      * @throws \Exception
      */
     public static function Until(Time\Time $t): Time\Duration
@@ -84,29 +70,16 @@ abstract class Time
         return (clone $t)->sub(time::Now()->UnixNanoDuration()->DateInterval())->UnixNanoDuration();
     }
 
-    /**
-     * @param \DateTimeInterface $dt
-     * @return \DCarbone\Go\Time\Duration
-     */
     public static function UntilDateTime(\DateTimeInterface $dt): Time\Duration
     {
         return Time::Duration((new \DateTime())->diff($dt, false));
     }
 
-    /**
-     * @param \DCarbone\Go\Time\Duration $d1
-     * @param \DCarbone\Go\Time\Duration $d2
-     * @return int
-     */
     public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int
     {
         return $d1->Compare($d2);
     }
 
-    /**
-     * @param string $s
-     * @return \DCarbone\Go\Time\Duration
-     */
     public static function ParseDuration(string $s): Time\Duration
     {
         if (0 === strlen($s)) {
@@ -222,22 +195,24 @@ abstract class Time
 
     /**
      * Attempts to "cast" the provided input into a Time\Duration type
-     *
-     * @param string|int|float|\DCarbone\Go\Time\Duration $input
-     * @return \DCarbone\Go\Time\Duration
      */
-    public static function Duration($input): Time\Duration
+    public static function Duration(null|string|int|float|Time\Duration|\DateInterval $input): Time\Duration
     {
         if (null === $input) {
             return new Time\Duration(0);
         }
         switch (gettype($input)) {
+            default:
+                throw new \UnexpectedValueException(
+                    sprintf('Cannot cast input of type "%s" to "%s"', gettype($input), Time\Duration::class)
+                );
+
             case 'string':
                 return static::ParseDuration($input);
             case 'integer':
                 return new Time\Duration($input);
             case 'double':
-                return new Time\Duration(intval($input, 10));
+                return new Time\Duration((int)$input);
             case 'object':
                 if ($input instanceof Time\Duration) {
                     return clone $input;
@@ -273,29 +248,17 @@ abstract class Time
                     if (is_int($input->y)) {
                         $ns += ($input->y * self::yearToHours * Time::Hour);
                     }
-                    return new Time\Duration(intval(boolval($input->invert) ? -$ns : $ns));
+                    return new Time\Duration(intval($input->invert ? -$ns : $ns));
                 }
                 throw new \UnexpectedValueException(sprintf('Cannot handle object of type "%s"', get_class($input)));
         }
-        throw new \UnexpectedValueException(
-            sprintf('Cannot cast input of type "%s" to "%s"', gettype($input), Time\Duration::class)
-        );
     }
 
-    /**
-     * @param string $orig
-     * @return \InvalidArgumentException
-     */
     private static function _invalidDurationException(string $orig): \InvalidArgumentException
     {
         return new \InvalidArgumentException("Invalid duration: {$orig}");
     }
 
-    /**
-     * @param string $unit
-     * @param string $orig
-     * @return \InvalidArgumentException
-     */
     private static function _invalidDurationUnitException(string $unit, string $orig): \InvalidArgumentException
     {
         return new \InvalidArgumentException("Unknown unit {$unit} in duration {$orig}");
