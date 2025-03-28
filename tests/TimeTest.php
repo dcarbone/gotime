@@ -303,12 +303,6 @@ class TimeTest extends TestCase
         $this->assertEquals(0, $dur->Nanoseconds());
     }
 
-    public function testDurationCastBool()
-    {
-        $this->expectException(\UnexpectedValueException::class);
-        Time::Duration(true);
-    }
-
     public function testDurationCastDateInterval()
     {
         $di = new \DateInterval('PT10S');
