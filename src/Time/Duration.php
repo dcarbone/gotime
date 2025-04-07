@@ -159,7 +159,7 @@ class Duration implements \JsonSerializable
         }
     }
 
-    public function jsonSerialize(): int
+    public function jsonSerialize(): mixed
     {
         return $this->ns;
     }
