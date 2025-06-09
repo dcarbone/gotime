@@ -13,6 +13,7 @@ class Time extends \DateTime
 
     /**
      * @throws \DateMalformedStringException
+     * @throws \Exception
      */
     #[\ReturnTypeWillChange]
     public static function createFromFormat(string $format, string $datetime, \DateTimeZone $timezone = null): bool|static

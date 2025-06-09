@@ -147,7 +147,7 @@ class Duration implements \JsonSerializable
         return $v;
     }
 
-    private static function _fmtInt(string &$buff, int $v)
+    private static function _fmtInt(string &$buff, int $v): void
     {
         if (0 === $v) {
             $buff = "0{$buff}";
@@ -159,7 +159,7 @@ class Duration implements \JsonSerializable
         }
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): int
     {
         return $this->ns;
     }
