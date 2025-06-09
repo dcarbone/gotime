@@ -32,6 +32,8 @@ abstract class Time
         'h'  => self::Hour,
     ];
 
+    private static Time\Duration $_zeroDuration;
+
     private function __construct()
     {
         // not designed to be constructed
@@ -252,6 +254,17 @@ abstract class Time
                 }
                 throw new \UnexpectedValueException(sprintf('Cannot handle object of type "%s"', get_class($input)));
         }
+    }
+
+    /**
+     * Returns a zero duration instance.
+     */
+    public static function ZeroDuration(): Time\Duration
+    {
+        if (!isset(self::$_zeroDuration)) {
+            self::$_zeroDuration = new Time\Duration(0);
+        }
+        return self::$_zeroDuration;
     }
 
     private static function _invalidDurationException(string $orig): \InvalidArgumentException
