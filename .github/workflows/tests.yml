@@ -33,7 +33,7 @@ jobs:
           echo "phpunit-version=${_phpunit_version}" >> $GITHUB_OUTPUT
 
       - name: 'Install jq'
-        uses: dcarbone/install-jq-action@v3
+        uses: dcarbone/install-jq-action@v4
         with:
           force: true
 
