@@ -16,7 +16,7 @@ class Time extends \DateTime
      * @throws \Exception
      */
     #[\ReturnTypeWillChange]
-    public static function createFromFormat(string $format, string $datetime, \DateTimeZone $timezone = null): bool|static
+    public static function createFromFormat(string $format, string $datetime, \DateTimeZone|null $timezone = null): bool|static
     {
         if ($dt = parent::createFromFormat($format, $datetime, $timezone)) {
             // todo: find more efficient implementation
