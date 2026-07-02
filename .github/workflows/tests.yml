@@ -15,7 +15,7 @@ jobs:
           - "8.4"
     name: PHP ${{ matrix.php-version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 'Define vars'
         id: vars
@@ -33,7 +33,7 @@ jobs:
           echo "phpunit-version=${_phpunit_version}" >> $GITHUB_OUTPUT
 
       - name: 'Install jq'
-        uses: dcarbone/install-jq-action@v3
+        uses: dcarbone/install-jq-action@v4
         with:
           force: true
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: 'Init composer dep cache'
         id: cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: "composer-${{ runner.os }}-${{ matrix.php-version }}-${{ steps.vars.outputs.phpunit-version }}-${{ hashFiles('composer.lock') }}"
@@ -74,7 +74,7 @@ jobs:
 
       - name: 'Save composer dep cache'
         if: steps.cache.outputs.cache-hit != 'true' && steps.cache.outputs.cache-hit != true
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: "composer-${{ runner.os }}-${{ matrix.php-version }}-${{ steps.vars.outputs.phpunit-version }}-${{ hashFiles('composer.lock') }}"
