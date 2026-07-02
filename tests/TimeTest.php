@@ -39,6 +39,19 @@ class TimeTest extends TestCase
         $this->assertEquals(0, $time->UnixNano(), 'Unixnano mismatch');
     }
 
+    public function testCreateFromFormatAndErrors()
+    {
+        $t = Time\Time::createFromFormat('Y-m-d H:i:s.u O', '2026-07-01 12:34:56.123456 +0000');
+        $this->assertInstanceOf(Time\Time::class, $t);
+        $this->assertEquals(123456000, $t->Nanosecond());
+
+        $bad = Time\Time::createFromFormat('Y-m-d', 'not-a-date');
+        $this->assertFalse($bad);
+
+        $errs = Time\Time::getLastErrorsString();
+        $this->assertNotSame('', $errs);
+    }
+
     public function testNow()
     {
         // todo: this test needs to be rethought...
@@ -58,9 +71,10 @@ class TimeTest extends TestCase
         $this->assertEquals((int)gmdate('U', $s), $time->Unix()); // TODO: mildly redundant
 
         // difficult to really assert, but maybe assume a small range of acceptance?
-        $this->assertTrue(
-            ($ns + 500 * Time::Millisecond > $time->UnixNano()) ||
-            ($ns - 500 * Time::Millisecond < $time->UnixNano())
+        $this->assertLessThan(
+            2 * Time::Second,
+            abs($time->UnixNano() - $ns),
+            sprintf('UnixNano() out of expected range: got %d, expected around %d', $time->UnixNano(), $ns)
         );
 
         // for 1 million iterations, call ::Now() just to MAYBE HOPEFULLY catch ridiculousness...
@@ -84,7 +98,7 @@ class TimeTest extends TestCase
             $s = $mt;
         }
         $s = (int)$s;
-        $ns = intval(floatval($ns) * Time::Second);
+        $ns = ($s * Time::Second) + intval(floatval($ns) * Time::Second);
 
         return [$s, $ns];
     }
@@ -225,6 +239,12 @@ class TimeTest extends TestCase
         $b = new \DateTime('@0');
 
         $this->assertTrue($a->EqualDateTime($b));
+
+        $a = Time::New();
+        $a->setTime(0, 0, 0, 123000);
+        $b = \DateTime::createFromFormat('U.u', '0.123000');
+        $this->assertInstanceOf(\DateTime::class, $b);
+        $this->assertTrue($a->EqualDateTime($b));
     }
 
     public function testEqualDateTimeNegative()
@@ -233,6 +253,87 @@ class TimeTest extends TestCase
         $b = new \DateTime('@0');
 
         $this->assertFalse($a->EqualDateTime($b));
+    }
+
+    public function testDateTimeComparisonAtMicrosecondPrecision()
+    {
+        $a = Time::New();
+        $a->setTime(0, 0, 0, 123456);
+
+        $same = \DateTimeImmutable::createFromFormat('U.u', '0.123456', new \DateTimeZone('UTC'));
+        $this->assertInstanceOf(\DateTimeImmutable::class, $same);
+        $this->assertTrue($a->EqualDateTime($same));
+        $this->assertFalse($a->BeforeDateTime($same));
+        $this->assertFalse($a->AfterDateTime($same));
+
+        $later = \DateTimeImmutable::createFromFormat('U.u', '0.123457', new \DateTimeZone('UTC'));
+        $this->assertInstanceOf(\DateTimeImmutable::class, $later);
+        $this->assertFalse($a->EqualDateTime($later));
+        $this->assertTrue($a->BeforeDateTime($later));
+        $this->assertFalse($a->AfterDateTime($later));
+
+        $earlier = \DateTimeImmutable::createFromFormat('U.u', '0.123455', new \DateTimeZone('UTC'));
+        $this->assertInstanceOf(\DateTimeImmutable::class, $earlier);
+        $this->assertFalse($a->EqualDateTime($earlier));
+        $this->assertFalse($a->BeforeDateTime($earlier));
+        $this->assertTrue($a->AfterDateTime($earlier));
+    }
+
+    public function testCompareDurationAndZeroDuration()
+    {
+        $zero1 = Time::ZeroDuration();
+        $zero2 = Time::ZeroDuration();
+        $this->assertSame($zero1, $zero2);
+        $this->assertEquals(0, $zero1->Nanoseconds());
+
+        $small = Time::ParseDuration('1s');
+        $big = Time::ParseDuration('2s');
+        $this->assertEquals(-1, Time::CompareDuration($small, $big));
+        $this->assertEquals(1, Time::CompareDuration($big, $small));
+        $this->assertEquals(0, Time::CompareDuration($small, Time::ParseDuration('1s')));
+    }
+
+    public function testParseDurationWithUnknownUnit()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Time::ParseDuration('1fortnight');
+    }
+
+    public function testMonthAndWeekdayHelpers()
+    {
+        $month = new Time\Month(6);
+        $this->assertEquals(6, $month->Ord());
+        $this->assertTrue($month->Is(6));
+        $this->assertTrue($month->Is(new Time\Month(6)));
+        $this->assertEquals('Jun', $month->Short());
+        $this->assertEquals('June', (string)$month);
+        $this->assertEquals('"June"', json_encode($month));
+
+        $invalidMonth = new Time\Month(99);
+        $this->assertEquals(1, $invalidMonth->Ord());
+
+        $weekday = new Time\Weekday(3);
+        $this->assertEquals(3, $weekday->Ord());
+        $this->assertTrue($weekday->Is(3));
+        $this->assertTrue($weekday->Is(new Time\Weekday(3)));
+        $this->assertEquals('Wed', $weekday->Short());
+        $this->assertEquals('Wednesday', (string)$weekday);
+        $this->assertEquals('"Wednesday"', json_encode($weekday));
+
+        $invalidWeekday = new Time\Weekday(99);
+        $this->assertEquals(0, $invalidWeekday->Ord());
+    }
+
+    public function testDateIntervalAndIntervalSpecConstructors()
+    {
+        $spec = new Time\IntervalSpec('PT1H2M3S', true, 0.5);
+        $this->assertEquals('PT1H2M3S', $spec->spec);
+        $this->assertTrue($spec->invert);
+        $this->assertEquals(0.5, $spec->f);
+
+        $di = new Time\DateInterval('PT1S', true, 0.25);
+        $this->assertEquals(1, $di->invert);
+        $this->assertEquals(0.25, $di->f);
     }
 
     public function testSinceTime()

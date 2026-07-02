@@ -9,10 +9,10 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.1"
           - "8.2"
           - "8.3"
           - "8.4"
+          - "8.5"
     name: PHP ${{ matrix.php-version }}
     steps:
       - uses: actions/checkout@v7
@@ -24,11 +24,11 @@ jobs:
         run: |
           _phpunit_version=
           case "${{ matrix.php-version }}" in
-            8.1) _phpunit_version='10.5' ;;
-            8.2) _phpunit_version='11.1' ;;
-            8.3) _phpunit_version='11.1' ;;
-            8.4) _phpunit_version='11.1' ;;
-            *) echo "Unsupported PHP version: ${{ inputs.php-version }}" && exit 1 ;;
+            8.2) _phpunit_version='11.5.50' ;;
+            8.3) _phpunit_version='11.5.50' ;;
+            8.4) _phpunit_version='11.5.50' ;;
+            8.5) _phpunit_version='12.5.8' ;;
+            *) echo "Unsupported PHP version: ${{ matrix.php-version }}" && exit 1 ;;
           esac
           echo "phpunit-version=${_phpunit_version}" >> $GITHUB_OUTPUT
 
@@ -80,4 +80,4 @@ jobs:
           key: "composer-${{ runner.os }}-${{ matrix.php-version }}-${{ steps.vars.outputs.phpunit-version }}-${{ hashFiles('composer.lock') }}"
 
       - name: Run tests
-        run: ./vendor/bin/phpunit
+        run: ./vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations

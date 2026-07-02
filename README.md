@@ -1,77 +1,132 @@
 # gotime
-Golang-like time class(es) for PHP 8.1+
+
+Golang-inspired time helpers for PHP **8.2+**.
 
 [![Tests](https://github.com/dcarbone/gotime/actions/workflows/tests.yml/badge.svg)](https://github.com/dcarbone/gotime/actions/workflows/tests.yml)
 
-## Desc
+## Installation
 
-The goal of this lib is to achieve near-enough (as determined by me) api equivalency in PHP to the GoLang Time package,
-as basically it is just better than PHP's.
-
-## Classes
-
-### Duration
-
-The [Duration](src/Time/Duration.php) class is designed to emulate the golang 
-[time.Duration](https://golang.org/src/time/time.go#L620) type.
-
-There are 2 ways to construct a Duration class:
-
-```php
-use \DCarbone\Go\Time;
-
-$d = new Time\Duration(5 * Time::Second);
-// produces a Duration with an internal value of 5e9;
-
-$d = Time::ParseDuration('5s');
-// produces a Duration with an internal value of 5e9;
+```bash
+composer require dcarbone/gotime
 ```
 
-Internally the "duration" is represented as an integer, allow for much fun.
-
-#### Serialization
-Assuming `$dt = new Time\Duration(5 * Time::Second);`:
-
-|Type|Exec|Output|
-|----|----|------|
-|JSON|`echo json_encode($dt);`|`5000000000`|
-|string|`echo (string)$dt;`|`5s`;
-
-#### DateInterval
-
-[DateInterval](http://php.net/manual/en/class.dateinterval.php) pretty much sucks.  I have created my own 
-[DateInterval](src/Time/DateInterval.php) and [IntervalSpec](src/Time/IntervalSpec.php) classes to help alleviate this.
-
-These provide [Duration](src/Time/Duration.php) the ability to create an interval for use with the standard 
-[DateTime::add](http://php.net/manual/en/datetime.add.php) and 
-[DateTime::sub](http://php.net/manual/en/datetime.sub.php) methods as such:
+## Quick start
 
 ```php
-$dt = new \DateTime();
-echo "{$dt->format('H:i:s')}\n";
+<?php
 
-$d = new Time\Duration(5 * Time::Second);
-$dt->add($d->DateInterval());
-echo "{$dt->format('H:i:s')}\n";
+use DCarbone\Go\Time;
 
-// 16:03:37
-// 16:03:42
+$t = Time::Now();
+$d = Time::ParseDuration('1h30m');
+
+echo $t, PHP_EOL;              // formatted timestamp
+echo $d, PHP_EOL;              // 1h30m0s
+echo $d->Nanoseconds(), PHP_EOL; // 5400000000000
 ```
 
-### Time
+## API overview
 
-The [Time](src/Time/Time.php) class is designed to BARELY emulate the golang 
-[time.Time](https://golang.org/src/time/time.go#L116) type.  It's basically 
-[DateTime](http://php.net/manual/en/class.datetime.php) with stuff on it.  I consider it to be in a "beta" state.
+This package exposes a static facade class, `DCarbone\Go\Time`, plus several value objects under `DCarbone\Go\Time\*`.
 
-There are 2 basic ways to construct a Time class:
+### Duration (`DCarbone\Go\Time\Duration`)
+
+`Duration` stores elapsed time as a signed integer count of nanoseconds.
+
+Common construction patterns:
 
 ```php
 use DCarbone\Go\Time;
 
-// Returns an instance of Time\Time with an internal time of the unix epoch 
-$t = Time::New();
+$a = new Time\Duration(5 * Time::Second);
+$b = Time::ParseDuration('5s');
+$c = Time::Duration('1h2m3.5s'); // cast helper
+```
 
-// Returns an instance of Time\Time with an internal time of whenever you constructed it. 
-$t = Time::Now();
+Supported `ParseDuration()` units:
+
+- `ns`
+- `us`, `µs`, `μs`
+- `ms`
+- `s`
+- `m`
+- `h`
+
+Key methods:
+
+- `Nanoseconds()`, `Microseconds()`, `Milliseconds()`, `Seconds()`, `Minutes()`, `Hours()`
+- `Truncate(Duration $m)`, `Round(Duration $m)`
+- `Compare(Duration $other)` (`-1`, `0`, `1`)
+- `DateInterval()` / `IntervalSpec()`
+- `__toString()` (Go-like formatting, e.g. `500ms`, `1h2m3.004s`)
+- `jsonSerialize()` (raw nanosecond integer)
+
+### Time (`DCarbone\Go\Time\Time`)
+
+`Time\Time` extends `\DateTime` and adds Go-style helpers.
+
+Primary constructors:
+
+```php
+use DCarbone\Go\Time;
+
+$zero = Time::New(); // Unix epoch
+$now  = Time::Now(); // current time
+```
+
+Comparison helpers:
+
+- `Before(Time $t)`, `After(Time $t)`, `Equal(Time $t)`
+- `BeforeDateTime(\DateTimeInterface $dt)`, `AfterDateTime(...)`, `EqualDateTime(...)`
+
+Unix helpers:
+
+- `Unix()`
+- `UnixNano()`
+- `UnixNanoDuration()`
+
+Date/time part helpers:
+
+- `Year()`, `Month()`, `Day()`, `Weekday()`
+- `Hour()`, `Minute()`, `Second()`, `Nanosecond()`
+- `IsZero()`
+
+Duration arithmetic:
+
+- `AddDuration(Duration $d)`
+- `SubDuration(Duration $d)`
+
+### Static facade helpers (`DCarbone\Go\Time`)
+
+- Constants: `Nanosecond`, `Microsecond`, `Millisecond`, `Second`, `Minute`, `Hour`
+- Constructors and now/epoch:
+  - `New()`
+  - `Now()`
+- Duration operations:
+  - `ParseDuration(string $s)`
+  - `Duration(null|string|int|float|Duration|\DateInterval $input)`
+  - `CompareDuration(Duration $d1, Duration $d2)`
+  - `ZeroDuration()`
+- Relative time:
+  - `Since(Time\Time $t)`
+  - `SinceDateTime(\DateTimeInterface $dt)`
+  - `Until(Time\Time $t)`
+  - `UntilDateTime(\DateTimeInterface $dt)`
+
+### Supporting value types
+
+- `Time\Month` (month ordinal/name helpers)
+- `Time\Weekday` (weekday ordinal/name helpers)
+- `Time\IntervalSpec` (intermediate duration-to-interval representation)
+- `Time\DateInterval` (extends `\DateInterval`, including fractional seconds support)
+
+## Notes
+
+- Precision in PHP runtime is microseconds; nanosecond APIs are represented as integer nanoseconds derived from microsecond resolution.
+- `Duration(\DateInterval $input)` converts years/months using average-hour constants, so calendar-month/year conversion is approximate.
+
+## Running tests
+
+```bash
+./vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations
 ```
