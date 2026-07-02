@@ -141,7 +141,7 @@ class Time extends \DateTime
     public function EqualDateTime(\DateTimeInterface $dt): bool
     {
         return $this->UnixNano() === intval(
-                ((int)$dt->format('U') * TimeNS::Second + (int)$dt->format('u') * TimeNS::Nanosecond)
+                ((int)$dt->format('U') * TimeNS::Second + (int)$dt->format('u') * TimeNS::Microsecond)
             );
     }
 

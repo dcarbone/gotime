@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
-         bootstrap="./vendor/autoload.php"
-         colors="true"
-         verbose="true"
-         stopOnFailure="true">
-    <coverage>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
-    </coverage>
-    <testsuites>
-        <testsuite name="duration">
-            <file>./tests/DurationTest.php</file>
-        </testsuite>
-        <testsuite name="time">
-            <file>./tests/TimeTest.php</file>
-        </testsuite>
-    </testsuites>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd" bootstrap="./vendor/autoload.php" colors="true" stopOnFailure="true" cacheDirectory=".phpunit.cache">
+  <testsuites>
+    <testsuite name="duration">
+      <file>./tests/DurationTest.php</file>
+    </testsuite>
+    <testsuite name="time">
+      <file>./tests/TimeTest.php</file>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+  </source>
 </phpunit>

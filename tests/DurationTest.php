@@ -3,6 +3,7 @@
 namespace DCarbone\GoTimeTests;
 
 use DCarbone\Go\Time;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,9 +20,7 @@ class DurationTest extends TestCase
         $this->assertInstanceOf(Time\Duration::class, $d);
     }
 
-    /**
-     * @depends testCanConstructEmpty
-     */
+    #[Depends('testCanConstructEmpty')]
     public function testCanConstructWithValue()
     {
         $n = time() * Time::Second;
@@ -34,9 +33,7 @@ class DurationTest extends TestCase
         $this->assertEquals(-1, $d->Nanoseconds());
     }
 
-    /**
-     * @depends testCanConstructWithValue
-     */
+    #[Depends('testCanConstructWithValue')]
     public function testTruncate()
     {
         $d = new Time\Duration(Time::Second);
@@ -49,9 +46,7 @@ class DurationTest extends TestCase
         $this->assertEquals(Time::Second, $td->Nanoseconds());
     }
 
-    /**
-     * @depends testCanConstructWithValue
-     */
+    #[Depends('testCanConstructWithValue')]
     public function testRound()
     {
         $d = new Time\Duration(Time::Second);
@@ -62,9 +57,16 @@ class DurationTest extends TestCase
         $this->assertEquals(0, $td->Nanoseconds());
     }
 
-    /**
-     * @depends testCanConstructWithValue
-     */
+    #[Depends('testCanConstructWithValue')]
+    public function testDurationUnitConversions()
+    {
+        $d = new Time\Duration(90 * Time::Second);
+        $this->assertEquals(90 * 1e6, $d->Microseconds());
+        $this->assertEquals(90 * 1e3, $d->Milliseconds());
+        $this->assertEquals(1.5, $d->Minutes());
+    }
+
+    #[Depends('testCanConstructWithValue')]
     public function testParseDuration()
     {
         $d = Time::ParseDuration('1ns');
@@ -162,18 +164,14 @@ class DurationTest extends TestCase
         );
     }
 
-    /**
-     * @depends testParseDuration
-     */
+    #[Depends('testParseDuration')]
     public function testExceptionThrownWithInvalidDuration()
     {
         $this->expectException(\InvalidArgumentException::class);
         Time::ParseDuration('922337203685477581ns');
     }
 
-    /**
-     * @depends testParseDuration
-     */
+    #[Depends('testParseDuration')]
     public function testStringer()
     {
         $this->assertEquals('500ms', (string)new Time\Duration(500 * Time::Millisecond));
@@ -204,9 +202,7 @@ class DurationTest extends TestCase
         $this->assertEquals('1h2m3.004005006s', (string)$d);
     }
 
-    /**
-     * @depends testParseDuration
-     */
+    #[Depends('testParseDuration')]
     public function testCompare()
     {
         $d1 = Time::ParseDuration('5s');
