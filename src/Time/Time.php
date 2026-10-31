@@ -17,6 +17,9 @@ class Time extends \DateTime implements \JsonSerializable
     // matches a fractional second with more than 6 digits, capturing [prefix + first 6 digits, remaining digits, suffix]
     private const subMicroPattern = '/^(.*?\d[.,]\d{6})(\d+)(.*)$/s';
 
+    // max digits following a 7+ digit fraction that createFromFormat will leave for the rest of the format
+    private const maxSubMicroRemainder = 20;
+
     private int $nsec = 0;
 
     /**
@@ -61,6 +64,8 @@ class Time extends \DateTime implements \JsonSerializable
     /**
      * If a format containing "u" fails to parse due to a fractional second with more than 6 digits, parsing is
      * retried with the fraction truncated to 6 digits and the remaining digits (up to 9 total) are retained.
+     * Digits after the fraction may be left for subsequent format characters (e.g. numeric literals), but at most
+     * 20 such digits are considered.
      *
      * @throws \DateMalformedStringException
      * @throws \Exception
@@ -104,7 +109,9 @@ class Time extends \DateTime implements \JsonSerializable
             if ([] !== $r['errors'] || !is_int($end) || 6 > $end || 6 !== strspn($datetime, '0123456789', $end - 6, 6)) {
                 continue;
             }
-            for ($n = strspn($datetime, '0123456789', $end); 0 < $n; $n--) {
+            $digits = strspn($datetime, '0123456789', $end);
+            // bounding the remainder keeps the number of reparse attempts constant for long digit runs
+            for ($n = $digits; 0 < $n && $digits - $n <= self::maxSubMicroRemainder; $n--) {
                 yield [
                     substr($datetime, 0, $end) . substr($datetime, $end + $n),
                     self::_parseSubMicro(substr($datetime, $end, $n)),

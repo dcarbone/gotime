@@ -71,6 +71,16 @@ class NanosecondTest extends TestCase
         $this->assertSame(123456700, $t->Nanosecond());
         $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u\0', '2024-01-02 03:04:05.1234567'));
         $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u\0\0\0', '2024-01-02 03:04:05.12345678'));
+
+        // long fractions are accepted, but at most 20 trailing digits are left for the rest of the format
+        $long = '2024-01-02 03:04:05.123456789' . str_repeat('9', 100000);
+        $this->assertSame(123456789, Time\Time::createFromFormat('Y-m-d H:i:s.u', $long)->Nanosecond());
+        $start = hrtime(true);
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u', $long . 'x'));
+        $this->assertLessThan(1e9, hrtime(true) - $start);
+        $f = 'Y-m-d H:i:s.u' . str_repeat('\0', 20);
+        $this->assertSame(123456789, Time\Time::createFromFormat($f, '2024-01-02 03:04:05.123456789' . str_repeat('0', 20))->Nanosecond());
+        $this->assertFalse(Time\Time::createFromFormat($f . '\0', '2024-01-02 03:04:05.123456789' . str_repeat('0', 21)));
     }
 
     public function testJsonSerializeYearRange()
