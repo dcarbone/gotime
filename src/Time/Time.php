@@ -52,7 +52,7 @@ class Time extends \DateTime implements \JsonSerializable
         if (0 <= $sec || 0 === $us) {
             $t = new static(sprintf('@%d.%06d', $sec, $us));
         } else {
-            $t = new static(sprintf('@-%d.%06d', -$sec - 1, 1000000 - $us));
+            $t = new static(sprintf('@-%d.%06d', -($sec + 1), 1000000 - $us));
         }
         $t->nsec = $nsec % TimeNS::Microsecond;
         return $t;
@@ -261,24 +261,28 @@ class Time extends \DateTime implements \JsonSerializable
      */
     public function SubTime(\DateTimeInterface $u): Duration
     {
+        [$s1, $n1] = self::_parts($this);
         [$s2, $n2] = self::_parts($u);
-        $sd = $this->Unix() - $s2;
-        $nd = $this->Nanosecond() - $n2;
-        $maxSec = intdiv(PHP_INT_MAX, TimeNS::Second);
-        if ($sd > $maxSec) {
+        if ((0 > $s2 && $s1 > PHP_INT_MAX + $s2) || (0 < $s2 && $s1 < PHP_INT_MIN + $s2)) {
+            return new Duration(0 > $s2 ? PHP_INT_MAX : PHP_INT_MIN);
+        }
+        $sd = $s1 - $s2;
+        $nd = $n1 - $n2;
+        // borrow/carry a second so $sd and $nd share a sign before range-checking
+        if (0 < $sd && 0 > $nd) {
+            $sd--;
+            $nd += TimeNS::Second;
+        } elseif (0 > $sd && 0 < $nd) {
+            $sd++;
+            $nd -= TimeNS::Second;
+        }
+        if (0 < $sd && $sd > intdiv(PHP_INT_MAX - $nd, TimeNS::Second)) {
             return new Duration(PHP_INT_MAX);
         }
-        if ($sd < -$maxSec) {
+        if (0 > $sd && $sd < intdiv(PHP_INT_MIN - $nd, TimeNS::Second)) {
             return new Duration(PHP_INT_MIN);
         }
-        $d = $sd * TimeNS::Second;
-        if (0 < $nd && $d > PHP_INT_MAX - $nd) {
-            return new Duration(PHP_INT_MAX);
-        }
-        if (0 > $nd && $d < PHP_INT_MIN - $nd) {
-            return new Duration(PHP_INT_MIN);
-        }
-        return new Duration($d + $nd);
+        return new Duration($sd * TimeNS::Second + $nd);
     }
 
     /**

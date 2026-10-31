@@ -176,6 +176,30 @@ class NanosecondTest extends TestCase
         $old = new Time\Time('1000-01-01T00:00:00Z');
         $this->assertSame(PHP_INT_MAX, $far->SubTime($old)->Nanoseconds());
         $this->assertSame(PHP_INT_MIN, $old->SubTime($far)->Nanoseconds());
+
+        // differences that only fit once fractional seconds are included must not saturate
+        $hi = Time::Unix(9223372037);
+        $lo = Time::Unix(0, 999999999);
+        $this->assertSame(9223372036000000001, $hi->SubTime($lo)->Nanoseconds());
+        $this->assertSame(-9223372036000000001, $lo->SubTime($hi)->Nanoseconds());
+        $this->assertSame(PHP_INT_MAX, Time::UnixNano(PHP_INT_MAX)->SubTime(Time::Unix(0))->Nanoseconds());
+        $this->assertSame(PHP_INT_MIN, Time::UnixNano(PHP_INT_MIN)->SubTime(Time::Unix(0))->Nanoseconds());
+        $this->assertSame(PHP_INT_MAX, Time::UnixNano(PHP_INT_MAX)->SubTime(Time::Unix(0, 1))->Nanoseconds() + 1);
+        $this->assertSame(PHP_INT_MAX, Time::Unix(0)->SubTime(Time::UnixNano(PHP_INT_MIN + 1))->Nanoseconds());
+        $this->assertSame(PHP_INT_MAX, Time::Unix(0)->SubTime(Time::UnixNano(PHP_INT_MIN))->Nanoseconds());
+    }
+
+    public function testUnixExtremeSeconds()
+    {
+        $t = Time::Unix(PHP_INT_MIN, 1000);
+        $this->assertSame(PHP_INT_MIN, $t->Unix());
+        $this->assertSame(1000, $t->Nanosecond());
+        $t = Time::Unix(PHP_INT_MIN + 1, 999999999);
+        $this->assertSame(PHP_INT_MIN + 1, $t->Unix());
+        $this->assertSame(999999999, $t->Nanosecond());
+        $t = Time::Unix(PHP_INT_MAX, 999999999);
+        $this->assertSame(PHP_INT_MAX, $t->Unix());
+        $this->assertSame(999999999, $t->Nanosecond());
     }
 
     public function testMutatorsHandleSubMicroseconds()
