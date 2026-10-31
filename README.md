@@ -119,7 +119,7 @@ Formatting:
 
 - `RFC3339Nano()` (e.g. `2024-01-02T03:04:05.123456789Z`, trailing zeros trimmed)
 - `__toString()` (Go-like `2006-01-02 15:04:05.999999999 -0700 MST` layout)
-- `jsonSerialize()` (RFC3339Nano string, matching Go's `MarshalJSON`)
+- `jsonSerialize()` (RFC3339Nano string, matching Go's `MarshalJSON`; throws `\RangeException` for years outside 0–9999)
 
 ### Static facade helpers (`DCarbone\Go\Time`)
 

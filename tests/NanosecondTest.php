@@ -45,11 +45,39 @@ class NanosecondTest extends TestCase
         $this->assertSame(123456789, $t->Nanosecond());
 
         $t = Time\Time::createFromFormat('Y-m-d H:i:s.u', '2024-01-02 03:04:05.123456', new \DateTimeZone('America/Chicago'));
+        $this->assertInstanceOf(Time\Time::class, $t);
         $this->assertSame(123456000, $t->Nanosecond());
         $this->assertSame('America/Chicago', $t->getTimezone()->getName());
 
         $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u', '2024-01-02 03:04:05.123456789xyz'));
         $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s', '2024-01-02 03:04:05.123456789'));
+
+        // extra digits must directly follow an unescaped "u" field, not an escaped literal
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s \u1.123456', '2024-01-02 03:04:05 u1.123456789'));
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.\u', '2024-01-02 03:04:05.u123456789'));
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.123456', '2024-01-02 03:04:05.123456789'));
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u', '2024-01-02 03:04:05.12345x789'));
+
+        $t = Time\Time::createFromFormat('\u Y-m-d H:i:s.uP', 'u 2024-01-02 03:04:05.12345678+02:00');
+        $this->assertInstanceOf(Time\Time::class, $t);
+        $this->assertSame(123456780, $t->Nanosecond());
+        $this->assertSame('+02:00', $t->format('P'));
+    }
+
+    public function testJsonSerializeYearRange()
+    {
+        $this->assertSame('"9999-12-31T23:59:59.999999999Z"', json_encode(Time::Unix(253402300799, 999999999)));
+        $this->assertSame('"0000-01-01T00:00:00Z"', json_encode(new Time\Time('0000-01-01T00:00:00Z')));
+        $this->assertSame('10000-01-01T00:00:00Z', Time::Unix(253402300800)->RFC3339Nano());
+
+        foreach ([Time::Unix(253402300800), new Time\Time('-0001-12-31T23:59:59Z')] as $t) {
+            try {
+                json_encode($t);
+                $this->fail('expected RangeException for ' . $t->RFC3339Nano());
+            } catch (\RangeException) {
+                $this->addToAssertionCount(1);
+            }
+        }
     }
 
     public static function unixCases(): array

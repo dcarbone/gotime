@@ -65,22 +65,68 @@ class Time extends \DateTime implements \JsonSerializable
      * @throws \DateMalformedStringException
      * @throws \Exception
      */
-    #[\ReturnTypeWillChange]
-    public static function createFromFormat(string $format, string $datetime, \DateTimeZone|null $timezone = null): bool|static
+    public static function createFromFormat(string $format, string $datetime, \DateTimeZone|null $timezone = null): static|false
     {
-        $t = parent::createFromFormat($format, $datetime, $timezone);
+        $t = self::_parentFromFormat($format, $datetime, $timezone);
         if (false !== $t) {
             return $t;
         }
-        if (!str_contains($format, 'u') || !preg_match(self::subMicroPattern, $datetime, $m)) {
+        $sub = self::_splitSubMicro($format, $datetime);
+        if (null === $sub) {
             return false;
         }
-        $t = parent::createFromFormat($format, $m[1] . $m[3], $timezone);
+        $t = self::_parentFromFormat($format, $sub[0], $timezone);
         if (false === $t) {
             return false;
         }
-        $t->nsec = self::_parseSubMicro($m[2]);
+        $t->nsec = $sub[1];
         return $t;
+    }
+
+    /**
+     * Locates the input digits following a fully consumed (6 digit) unescaped "u" field and removes them.
+     *
+     * @return array{string, int}|null [input without the extra digits, sub-microsecond nanoseconds]
+     */
+    private static function _splitSubMicro(string $format, string $datetime): ?array
+    {
+        $len = strlen($format);
+        for ($i = 0; $i < $len; $i++) {
+            if ('\\' === $format[$i]) {
+                $i++;
+                continue;
+            }
+            if ('u' !== $format[$i]) {
+                continue;
+            }
+            // parse only up to and including this "u"; "+" reports the remainder's offset as a trailing data warning
+            $r = date_parse_from_format(substr($format, 0, $i + 1) . '+', $datetime);
+            $end = array_search('Trailing data', $r['warnings'], true);
+            if ([] !== $r['errors'] || !is_int($end) || 6 > $end || !ctype_digit(substr($datetime, $end - 6, 6))) {
+                continue;
+            }
+            $n = strspn($datetime, '0123456789', $end);
+            if (0 === $n) {
+                continue;
+            }
+            return [
+                substr($datetime, 0, $end) . substr($datetime, $end + $n),
+                self::_parseSubMicro(substr($datetime, $end, $n)),
+            ];
+        }
+        return null;
+    }
+
+    /**
+     * \DateTime::createFromFormat() instantiates the called class, but is declared as returning \DateTime.
+     */
+    private static function _parentFromFormat(string $format, string $datetime, ?\DateTimeZone $timezone): static|false
+    {
+        $t = parent::createFromFormat($format, $datetime, $timezone);
+        if (false === $t || $t instanceof static) {
+            return $t;
+        }
+        return static::createFromInterface($t);
     }
 
     public static function createFromInterface(\DateTimeInterface $object): static
@@ -319,8 +365,15 @@ class Time extends \DateTime implements \JsonSerializable
         return $s . (0 === $this->getOffset() ? 'Z' : $this->format('P'));
     }
 
+    /**
+     * @throws \RangeException if the year is outside [0, 9999], as RFC 3339 requires a four-digit year.
+     */
     public function jsonSerialize(): string
     {
+        $y = $this->Year();
+        if (0 > $y || 9999 < $y) {
+            throw new \RangeException(sprintf('Time::jsonSerialize: year %d outside of range [0,9999]', $y));
+        }
         return $this->RFC3339Nano();
     }
 

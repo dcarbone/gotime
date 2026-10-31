@@ -14,7 +14,6 @@ class TimeTest extends TestCase
     public function testZero()
     {
         $time = Time::New();
-        $this->assertInstanceOf(Time\Time::class, $time);
         $this->assertTrue($time->IsZero());
         $this->assertEquals(1970, $time->Year());
         $this->assertIsInt($time->Nanosecond());
@@ -60,7 +59,6 @@ class TimeTest extends TestCase
 
         // close enough...
         $time = Time::Now();
-        $this->assertInstanceOf(Time\Time::class, $time);
         $this->assertEquals((int)gmdate('Y', $s), $time->Year(), 'Year mismatch');
         $this->assertEquals((int)gmdate('m', $s), $time->Month()->Ord(), 'Month mismatch');
         $this->assertEquals((int)gmdate('w', $s), $time->Weekday()->Ord(), 'Weekday mismatch');
@@ -91,7 +89,7 @@ class TimeTest extends TestCase
     private static function getNowParts(): array
     {
         $mt = microtime();
-        if (false !== strpos($mt, ' ')) {
+        if (str_contains($mt, ' ')) {
             [$ns, $s] = explode(' ', $mt);
         } else {
             $ns = '0.0';
