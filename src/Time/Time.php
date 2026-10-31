@@ -102,7 +102,7 @@ class Time extends \DateTime implements \JsonSerializable
             // parse only up to and including this "u"; "+" reports the remainder's offset as a trailing data warning
             $r = date_parse_from_format(substr($format, 0, $i + 1) . '+', $datetime);
             $end = array_search('Trailing data', $r['warnings'], true);
-            if ([] !== $r['errors'] || !is_int($end) || 6 > $end || !ctype_digit(substr($datetime, $end - 6, 6))) {
+            if ([] !== $r['errors'] || !is_int($end) || 6 > $end || 6 !== strspn($datetime, '0123456789', $end - 6, 6)) {
                 continue;
             }
             $n = strspn($datetime, '0123456789', $end);
