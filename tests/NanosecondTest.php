@@ -62,6 +62,15 @@ class NanosecondTest extends TestCase
         $this->assertInstanceOf(Time\Time::class, $t);
         $this->assertSame(123456780, $t->Nanosecond());
         $this->assertSame('+02:00', $t->format('P'));
+
+        // trailing digits required by later format characters are not consumed as fraction
+        $t = Time\Time::createFromFormat('!Y-m-d H:i:s.u\0\0', '2024-01-02 03:04:05.12345678900');
+        $this->assertInstanceOf(Time\Time::class, $t);
+        $this->assertSame(123456789, $t->Nanosecond());
+        $t = Time\Time::createFromFormat('Y-m-d H:i:s.u\0', '2024-01-02 03:04:05.12345670');
+        $this->assertSame(123456700, $t->Nanosecond());
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u\0', '2024-01-02 03:04:05.1234567'));
+        $this->assertFalse(Time\Time::createFromFormat('Y-m-d H:i:s.u\0\0\0', '2024-01-02 03:04:05.12345678'));
     }
 
     public function testJsonSerializeYearRange()

@@ -71,24 +71,23 @@ class Time extends \DateTime implements \JsonSerializable
         if (false !== $t) {
             return $t;
         }
-        $sub = self::_splitSubMicro($format, $datetime);
-        if (null === $sub) {
-            return false;
+        foreach (self::_subMicroCandidates($format, $datetime) as [$input, $nsec]) {
+            $t = self::_parentFromFormat($format, $input, $timezone);
+            if (false !== $t) {
+                $t->nsec = $nsec;
+                return $t;
+            }
         }
-        $t = self::_parentFromFormat($format, $sub[0], $timezone);
-        if (false === $t) {
-            return false;
-        }
-        $t->nsec = $sub[1];
-        return $t;
+        return false;
     }
 
     /**
-     * Locates the input digits following a fully consumed (6 digit) unescaped "u" field and removes them.
+     * Yields candidate splits of the digits following a fully consumed (6 digit) unescaped "u" field, longest
+     * fraction first, leaving any remaining digits for the rest of the format (e.g. numeric literals).
      *
-     * @return array{string, int}|null [input without the extra digits, sub-microsecond nanoseconds]
+     * @return \Generator<array{string, int}> [input without the extra fractional digits, sub-microsecond nanoseconds]
      */
-    private static function _splitSubMicro(string $format, string $datetime): ?array
+    private static function _subMicroCandidates(string $format, string $datetime): \Generator
     {
         $len = strlen($format);
         for ($i = 0; $i < $len; $i++) {
@@ -105,16 +104,13 @@ class Time extends \DateTime implements \JsonSerializable
             if ([] !== $r['errors'] || !is_int($end) || 6 > $end || 6 !== strspn($datetime, '0123456789', $end - 6, 6)) {
                 continue;
             }
-            $n = strspn($datetime, '0123456789', $end);
-            if (0 === $n) {
-                continue;
+            for ($n = strspn($datetime, '0123456789', $end); 0 < $n; $n--) {
+                yield [
+                    substr($datetime, 0, $end) . substr($datetime, $end + $n),
+                    self::_parseSubMicro(substr($datetime, $end, $n)),
+                ];
             }
-            return [
-                substr($datetime, 0, $end) . substr($datetime, $end + $n),
-                self::_parseSubMicro(substr($datetime, $end, $n)),
-            ];
         }
-        return null;
     }
 
     /**
