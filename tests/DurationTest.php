@@ -3,6 +3,7 @@
 namespace DCarbone\GoTimeTests;
 
 use DCarbone\Go\Time;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
@@ -165,10 +166,34 @@ class DurationTest extends TestCase
     }
 
     #[Depends('testParseDuration')]
-    public function testExceptionThrownWithInvalidDuration()
+    public function testParseDurationBoundaries()
+    {
+        $this->assertSame(922337203685477581, Time::ParseDuration('922337203685477581ns')->Nanoseconds());
+        $this->assertSame(PHP_INT_MAX, Time::ParseDuration('9223372036854775807ns')->Nanoseconds());
+        $this->assertSame(-PHP_INT_MAX, Time::ParseDuration('-9223372036854775807ns')->Nanoseconds());
+        $this->assertSame(PHP_INT_MAX, Time::ParseDuration('9223372036s854775807ns')->Nanoseconds());
+        $this->assertSame(123456789, Time::ParseDuration('0.123456789s')->Nanoseconds());
+    }
+
+    public static function overflowingDurations(): array
+    {
+        return [
+            ['9223372036854775808ns'],
+            ['99999999999999999999ns'],
+            ['9223372037s'],
+            ['2562048h'],
+            ['9223372036s854775808ns'],
+            ['9223372036.854775808s'],
+            ['5124095576030431h5124095576030431h'],
+        ];
+    }
+
+    #[Depends('testParseDuration')]
+    #[DataProvider('overflowingDurations')]
+    public function testExceptionThrownWithInvalidDuration(string $in)
     {
         $this->expectException(\InvalidArgumentException::class);
-        Time::ParseDuration('922337203685477581ns');
+        Time::ParseDuration($in);
     }
 
     #[Depends('testParseDuration')]

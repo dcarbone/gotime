@@ -4,6 +4,9 @@
     <testsuite name="duration">
       <file>./tests/DurationTest.php</file>
     </testsuite>
+    <testsuite name="nanosecond">
+      <file>./tests/NanosecondTest.php</file>
+    </testsuite>
     <testsuite name="time">
       <file>./tests/TimeTest.php</file>
     </testsuite>
