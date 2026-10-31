@@ -20,6 +20,9 @@ abstract class Time
     // @see https://en.wikipedia.org/wiki/Month
     private const monthsToHours = 30.436875 * 24;
 
+    // largest value that can be multiplied by 10 without overflowing
+    private const overflowInt = (PHP_INT_MAX - PHP_INT_MAX % 10) / 10;
+
     /** @var array */
     private const unitMap = [
         'ns' => self::Nanosecond,
@@ -46,35 +49,52 @@ abstract class Time
 
     public static function Now(): Time\Time
     {
-        $mt = microtime();
-        return Time\Time::createFromFormat('0.u00 U', $mt);
+        [$usec, $sec] = explode(' ', microtime());
+        return new Time\Time(sprintf('@%s.%s', $sec, substr($usec, 2, 6)));
     }
 
     /**
-     * @throws \Exception
+     * Returns the UTC time corresponding to the given Unix time, $sec seconds and $nsec nanoseconds since
+     * January 1, 1970 UTC.  $nsec may be outside the range [0, 999999999].
      */
+    public static function Unix(int $sec, int $nsec = 0): Time\Time
+    {
+        return Time\Time::fromUnix($sec, $nsec);
+    }
+
+    public static function UnixMilli(int $msec): Time\Time
+    {
+        return Time\Time::fromUnix(intdiv($msec, 1000), ($msec % 1000) * self::Millisecond);
+    }
+
+    public static function UnixMicro(int $usec): Time\Time
+    {
+        return Time\Time::fromUnix(intdiv($usec, 1000000), ($usec % 1000000) * self::Microsecond);
+    }
+
+    public static function UnixNano(int $nsec): Time\Time
+    {
+        return Time\Time::fromUnix(0, $nsec);
+    }
+
     public static function Since(Time\Time $t): Time\Duration
     {
-        return static::Now()->sub($t->UnixNanoDuration()->DateInterval())->UnixNanoDuration();
+        return static::Now()->SubTime($t);
     }
 
     public static function SinceDateTime(\DateTimeInterface $dt): Time\Duration
     {
-        return Time::Duration((clone $dt)->diff(new \DateTime()));
+        return static::Now()->SubTime($dt);
     }
 
-    /**
-     * @throws \DateInvalidOperationException
-     * @throws \Exception
-     */
     public static function Until(Time\Time $t): Time\Duration
     {
-        return (clone $t)->sub(time::Now()->UnixNanoDuration()->DateInterval())->UnixNanoDuration();
+        return $t->SubTime(static::Now());
     }
 
     public static function UntilDateTime(\DateTimeInterface $dt): Time\Duration
     {
-        return Time::Duration((new \DateTime())->diff($dt, false));
+        return Time\Time::createFromInterface($dt)->SubTime(static::Now());
     }
 
     public static function CompareDuration(Time\Duration $d1, Time\Duration $d2): int
@@ -116,13 +136,11 @@ abstract class Time
                 if (48 > $ord || $ord > 57) {
                     break;
                 }
-                if (GOTIME_OVERFLOW_INT < $v) {
+                $digit = (int)$s[$i];
+                if (self::overflowInt < $v || PHP_INT_MAX - $digit < $v * 10) {
                     throw self::_invalidDurationException($orig);
                 }
-                $v = $v * 10 + (int)$s[$i];
-                if (GOTIME_OVERFLOW_INT < $v) {
-                    throw self::_invalidDurationException($orig);
-                }
+                $v = $v * 10 + $digit;
             }
             $s = substr($s, $i);
             $pre = $pl !== strlen($s);
@@ -142,16 +160,12 @@ abstract class Time
                     if ($overflow) {
                         continue;
                     }
-                    if (GOTIME_OVERFLOW_INT < $f) {
+                    $digit = (int)$s[$i];
+                    if (self::overflowInt < $f || PHP_INT_MAX - $digit < $f * 10) {
                         $overflow = true;
                         continue;
                     }
-                    $y = $f * 10 + (int)$s[$i];
-                    if (0 > $y) {
-                        $overflow = true;
-                        continue;
-                    }
-                    $f = $y;
+                    $f = $f * 10 + $digit;
                     $scale *= 10;
                 }
                 $s = substr($s, $i);
@@ -179,16 +193,17 @@ abstract class Time
             }
             $v *= $unit;
             if (0 < $f) {
-                $v += (int)($f * ($unit / $scale));
-                if (0 > $v) {
+                $fv = (int)($f * ($unit / $scale));
+                if (PHP_INT_MAX - $fv < $v) {
                     throw self::_invalidDurationException($orig);
                 }
+                $v += $fv;
             }
 
-            $d += $v;
-            if (0 > $d) {
+            if (PHP_INT_MAX - $v < $d) {
                 throw self::_invalidDurationException($orig);
             }
+            $d += $v;
             $s = substr($s, $i);
         }
 
@@ -220,9 +235,9 @@ abstract class Time
                     return clone $input;
                 }
                 if ($input instanceof \DateInterval) {
-                    // get base calculation
+                    // \DateInterval has microsecond precision; round to avoid float error (e.g. 0.123456 * 1e9)
                     if (isset($input->f) && (is_float($input->f) || is_int($input->f))) {
-                        $ns = ($input->f * 1e9); // convert to nano second integer
+                        $ns = (int)round($input->f * 1e6) * Time::Microsecond;
                     } else {
                         $ns = 0;
                     }
@@ -238,17 +253,22 @@ abstract class Time
                     if (is_int($input->h) && 0 < $input->h) {
                         $ns += ($input->h * Time::Hour);
                     }
-                    // days
-                    if (is_int($input->d) && 0 < $input->d) {
-                        $ns += ($input->d * 24 * Time::Hour);
-                    }
-                    // months
-                    if (is_int($input->m) && 0 < $input->m) {
-                        $ns += ($input->m * self::monthsToHours * Time::Hour);
-                    }
-                    // years
-                    if (is_int($input->y)) {
-                        $ns += ($input->y * self::yearToHours * Time::Hour);
+                    if (is_int($input->days)) {
+                        // intervals produced by diff() carry an exact total day count
+                        $ns += ($input->days * 24 * Time::Hour);
+                    } else {
+                        // days
+                        if (is_int($input->d) && 0 < $input->d) {
+                            $ns += ($input->d * 24 * Time::Hour);
+                        }
+                        // months
+                        if (is_int($input->m) && 0 < $input->m) {
+                            $ns += ($input->m * self::monthsToHours * Time::Hour);
+                        }
+                        // years
+                        if (is_int($input->y) && 0 < $input->y) {
+                            $ns += ($input->y * self::yearToHours * Time::Hour);
+                        }
                     }
                     return new Time\Duration(intval($input->invert ? -$ns : $ns));
                 }

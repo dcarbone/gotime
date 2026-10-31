@@ -19,9 +19,6 @@
     "ext-json": "*"
   },
   "autoload": {
-    "files": [
-      "src/precision.php"
-    ],
     "psr-4": {
       "DCarbone\\Go\\": "src/"
     }
@@ -30,9 +27,6 @@
     "phpunit/phpunit": "^11.5.50 || ^12.5.8"
   },
   "autoload-dev": {
-    "files": [
-      "src/precision.php"
-    ],
     "psr-4": {
       "DCarbone\\Go\\": "src/",
       "DCarbone\\GoTimeTests\\": "tests/"
